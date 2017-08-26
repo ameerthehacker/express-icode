@@ -83,3 +83,4 @@ Thumbs.db
 
 # Avoid the files buid by angular
 /public
+/config/env.js
