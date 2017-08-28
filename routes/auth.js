@@ -21,25 +21,24 @@ router.post('/login', (req, res, next) => {
                                 'username': user.username,
                                 'email': user.email,
                                 'firstName': user.firstName,
-                                'lastName': user.lastName,
-                                'token': 'Bearer ' + jwt.sign({ 'userId': user.id }, config.application.secret, { expiresIn: '1h' })
-                            }});                       
+                                'lastName': user.lastName
+                            }, 'token': jwt.sign({ 'userId': user.id }, config.application.secret, { expiresIn: '1h' })});                       
                         }
                         else{
-                            res.json({ 'error': true, 'msg': 'Your password is incorrect!' });
+                            res.json({ 'error': true, 'msg': [ 'Your password is incorrect!' ] });
                         }
                     }
                     else{
-                        res.json({ 'error': true, 'msg': 'Internal Error:' + err });            
+                        res.json({ 'error': true, 'msg': [ 'Internal Error:' + err ] });            
                     }
                 });
             }
             else{
-                res.json({ 'error': true, 'msg': 'Could not find your account!' });
+                res.json({ 'error': true, 'msg': [ 'Could not find your account!' ] });
             }
         }
         else{
-            res.json({ 'error': true, 'msg': 'Internal Error:' + err });
+            res.json({ 'error': true, 'msg': [ 'Internal Error:' + err ] });
         }
     });
 });
