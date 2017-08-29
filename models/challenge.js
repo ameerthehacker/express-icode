@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const ChallengeSchema = mongoose.Schema({
+    'title': {
+        type: String,
+        rquired: true
+    },
     'problemStatement': {
         type: String,
         required: true
