@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const URLSlugs = require('mongoose-url-slugs');
 
 const ChallengeSchema = mongoose.Schema({
     'title': {
@@ -35,4 +36,12 @@ const ChallengeSchema = mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('Challenge', ChallengeSchema);
+ChallengeSchema.plugin(URLSlugs('title'));
+
+const Challenge = mongoose.model('Challenge', ChallengeSchema);
+
+Challenge.getAllChallenges = (callback) => {
+    Challenge.find(callback);
+};
+
+module.exports = Challenge;

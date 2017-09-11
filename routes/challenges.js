@@ -3,10 +3,29 @@ const Challenge = require('../models/challenge');
 const router = express.Router();
 
 router.get('/', (req, res, next) => {
-    res.json({ msg: 'TODO:// Challenges yet to be added' });
+    Challenge.getAllChallenges((err, challenges) => {
+        if(!err) {
+            res.json({ error: false, msg: challenges });
+        }
+        else {
+            res.json({ error: true, msg: err });            
+        }
+    });
+});
+router.get('/:slug', (req, res, next) => {
+    let slug = req.params.slug;
+    Challenge.findBySlug(slug, (err, challenge) => {
+        if(!err) {
+            res.json({ error: false, msg: challenge });
+        }
+        else {
+            res.json({ error: true, msg: err });            
+        }
+    });
 });
 router.post('/create', (req, res, next) => {
     let challenge = {};
+    challenge.title = req.body.title;    
     challenge.problemStatement = req.body.problemStatement;
     challenge.inputFormat = req.body.inputFormat;
     challenge.outputFormat = req.body.outputFormat;
