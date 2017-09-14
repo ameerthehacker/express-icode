@@ -1,6 +1,17 @@
 const mongoose = require('mongoose');
 const URLSlugs = require('mongoose-url-slugs');
 
+const TestCaseSchema = new mongoose.Schema({
+    input: {
+        type: String,
+        required: true
+    },
+    output: {
+        type: String,
+        required: true
+    }
+});
+
 const ChallengeSchema = mongoose.Schema({
     'title': {
         type: String,
@@ -32,7 +43,12 @@ const ChallengeSchema = mongoose.Schema({
     },
     'explanation': {
         type: String,
-        rquired: true
+        required: true
+    },
+    'testCases': {
+        type: Array,
+        Schema: TestCaseSchema,
+        required: true
     }
 });
 

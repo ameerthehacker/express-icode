@@ -33,6 +33,7 @@ router.post('/create', (req, res, next) => {
     challenge.sampleInput = req.body.sampleInput;        
     challenge.sampleOutput = req.body.sampleOutput;    
     challenge.explanation = req.body.explanation;
+    challenge.testCases = req.body.testCases;
 
     newChallenge = new Challenge(challenge);
     newChallenge.save((err) => {
