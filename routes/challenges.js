@@ -1,6 +1,7 @@
 const express = require('express');
 const Challenge = require('../models/challenge');
 const router = express.Router();
+const submissions = require('./submissions');
 
 router.get('/', (req, res, next) => {
     Challenge.getAllChallenges((err, challenges) => {
@@ -77,5 +78,9 @@ router.delete('/:slug', (req, res, next) => {
         }
     });
 });
+
+// Nested routes for code submissions
+
+router.use('/:slug/submissions', submissions);
 
 module.exports = router;
