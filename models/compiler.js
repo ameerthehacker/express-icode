@@ -28,6 +28,10 @@ const CompilerSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    timeout: {
+        type: Number,
+        required: true
+    },
     extension: {
         type: String,
         required: true
@@ -101,15 +105,30 @@ Compiler.compile = (compiler, code, input, callback, uid = 0) => {
     }
     // Start the container to compile and run the code safely
     docker.run(compiler.image, ['sh', '-c', containerCmd], process.stdout, { Volumes: { '/volume': {} }, 'Binds': [ compileDirectory + ':/volume:rw' ] }, (err, data) => {
-    }).on('data', function(container) {
-        // Check if the testcase was satisfied
-        let errors = fs.readFileSync(path.join(compileDirectory, errorFilename)).toString();            
-        if(errors.length > 0) {
-            callback({ error: true, compiled: false, msg: errors });
-        }
-        else{
-            let output = fs.readFileSync(path.join(compileDirectory, outputFilename)).toString();                        
-            callback({ error: false, compiled: true, msg: output });
+    })
+    .on('start', (container) => {
+        setTimeout(() => {
+            container.inspect((err, data) => {
+                if(data.State.Running) {
+                    // Close the container
+                    container.stop((err, data) => {});   
+                    callback({ error: false, compiled: true, timeout: true, msg: '' });
+                }
+            });        
+        }, compiler.timeout * 1000);
+    })
+    .on('data', (data) => {
+        // Send data only if container not closed forcefully
+        if(data.StatusCode != 137) {
+            // Check if the testcase was satisfied
+            let errors = fs.readFileSync(path.join(compileDirectory, errorFilename)).toString();            
+            if(errors.length > 0) {
+                callback({ error: true, compiled: false, timeout: false, msg: errors });
+            }
+            else{
+                let output = fs.readFileSync(path.join(compileDirectory, outputFilename)).toString();    
+                callback({ error: false, compiled: true, timeout: false, msg: output });
+            }
         }
         // Delete the created compiling folder        
         rmdir(compileDirectory, (err) => {
@@ -119,7 +138,7 @@ Compiler.compile = (compiler, code, input, callback, uid = 0) => {
         });
     }); 
 }
-Compiler.compileMany = (compiler, code, inputs,compiledAllCallback, compiledOneCallback) => {
+Compiler.compileMany = (compiler, code, inputs, compiledAllCallback, compiledOneCallback) => {
     let outputs = [];
     let compiledCount = 0;
     inputs.forEach((input, index) => {   

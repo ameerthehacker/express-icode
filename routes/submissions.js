@@ -34,6 +34,7 @@ router.post('/', (req, res, next) => {
                                     let testCaseResult = {
                                         input: challenge.testCases[i].input,
                                         output: outputs[i].msg,
+                                        timeout: outputs[i].timeout,
                                         expectedOutput: challenge.testCases[i].output   
                                     }
                                     if(challenge.testCases[i].output == outputs[i].msg) {
@@ -63,4 +64,5 @@ router.post('/', (req, res, next) => {
         }  
     });
 });
+
 module.exports = router;
