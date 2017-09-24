@@ -21,6 +21,8 @@
     "morgan": "~1.8.1",
     "passport": "^0.4.0",
     "passport-jwt": "^3.0.0",
-    "serve-favicon": "^2.4.4"
+    "rimraf": "^2.6.2",
+    "serve-favicon": "^2.4.4",
+    "uniqid": "^4.1.1"
   }
 }

@@ -1,7 +1,10 @@
 const mongoose = require('mongoose');
 const path = require('path');
 const fs = require('fs');
+const uniqid = require('uniqid');
 const Docker = require('dockerode');
+const rmdir = require('rimraf');
+const appRootPath = require('app-root-path');
 const docker = new Docker();
 
 const CompilerSchema = mongoose.Schema({
@@ -68,13 +71,20 @@ Compiler.getFullFilename = (compiler, filename) => {
     return filename + "." + compiler.extension;
 }
 
-Compiler.compile = (compiler, code, compileDirectory, input, callback) => {
+Compiler.compile = (compiler, code, input, callback, uid = 0) => {
+    // Unique directory to compile program
+    const compileDirectory = path.join(appRootPath.path, 'tmp', uniqid('compile-'));    
+    // Create directory if not exists
+    if(!fs.existsSync(compileDirectory)) {
+        fs.mkdirSync(compileDirectory);
+    }
     // Command to be executed inside the container
     let containerCmd = "";            
     let codeFilename = path.join(compileDirectory, Compiler.getFullFilename(compiler, 'solution'));
-    let errorFilename = "error.txt";
-    let inputFilename = "input.txt";
-    let outputFilename = "output.txt";
+    // To make sure all the filenames are unique
+    let errorFilename = uniqid("error-") +  ".compile";
+    let inputFilename = uniqid("input-") + ".run";
+    let outputFilename = uniqid("output-") + ".run";
     fs.writeFileSync(path.join(compileDirectory, inputFilename), input);
     fs.writeFileSync(codeFilename, code);            
     if(compiler.run.length == 0) {
@@ -90,17 +100,40 @@ Compiler.compile = (compiler, code, compileDirectory, input, callback) => {
         containerCmd = compileCmd + ";" + runCmd;
     }
     // Start the container to compile and run the code safely
-    docker.run(compiler.image, ['sh', '-c', containerCmd], process.stdout, { Volumes: { '/volume': {} }, 'Binds': [ compileDirectory + ':/volume:rw' ] }).then(function(container) {
+    docker.run(compiler.image, ['sh', '-c', containerCmd], process.stdout, { Volumes: { '/volume': {} }, 'Binds': [ compileDirectory + ':/volume:rw' ] }, (err, data) => {
+    }).on('data', function(container) {
         // Check if the testcase was satisfied
         let errors = fs.readFileSync(path.join(compileDirectory, errorFilename)).toString();            
         if(errors.length > 0) {
-            callback({ error: true, compiled: false, msg: [errors] });
+            callback({ error: true, compiled: false, msg: errors });
         }
         else{
             let output = fs.readFileSync(path.join(compileDirectory, outputFilename)).toString();                        
-            callback({ error: false, compiled: true, msg: [output] });
+            callback({ error: false, compiled: true, msg: output });
         }
+        // Delete the created compiling folder        
+        rmdir(compileDirectory, (err) => {
+            if(err) {
+                // TODO: Handle errors if needed
+            }
+        });
     }); 
+}
+Compiler.compileMany = (compiler, code, inputs,compiledAllCallback, compiledOneCallback) => {
+    let outputs = [];
+    let compiledCount = 0;
+    inputs.forEach((input, index) => {   
+        Compiler.compile(compiler, code, input, (output) => {
+            outputs[index] = output;
+            compiledCount++;
+            if(compiledOneCallback) {
+                compiledOneCallback(output);
+            }
+            if(inputs.length == compiledCount) {
+                compiledAllCallback(outputs);
+            }
+        }, index);
+    });
 }
 
 module.exports = Compiler;
