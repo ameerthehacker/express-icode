@@ -24,6 +24,7 @@ router.post('/', (req, res, next) => {
     challenge.sampleOutput = req.body.sampleOutput;    
     challenge.explanation = req.body.explanation;
     challenge.testCases = req.body.testCases;
+    challenge.userId = req.user.id;
 
     newChallenge = new Challenge(challenge);
     newChallenge.save((err) => {
@@ -69,14 +70,33 @@ router.put('/:slug', (req, res, next) => {
 });
 router.delete('/:slug', (req, res, next) => {
     let slug = req.params.slug;
-    Challenge.remove({ slug: slug }, (err) => {
-        if(!err){
-            res.json({ error: false });
+    Challenge.findBySlug(slug, (err, challenge) => {
+        if(!err) {
+            if(!challenge) {
+                // The specified challenge does not exist
+                res.sendStatus(404);
+                return;
+            }
+            if(challenge.userId == req.user.id) {
+                Challenge.remove({ slug: slug }, (err) => {
+                    if(!err){
+                        res.json({ error: false });
+                    }
+                    else{
+                        res.json({ error: true, msg: [err] });                        
+                    }
+                });
+            }
+            else {
+                // Forbidden access
+                res.sendStatus(403);
+            }
         }
-        else{
-            res.json({ error: true, msg: [err] });            
+        else {
+            res.json({ error: true, msg: [err] });                        
         }
     });
+    
 });
 
 // Nested routes for code submissions

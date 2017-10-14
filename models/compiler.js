@@ -38,6 +38,8 @@ const CompilerSchema = mongoose.Schema({
     }
 });
 
+// TODO: The compilation fails sometimes causing can't set headers after response is sent!
+
 const Compiler = mongoose.model('Compiler', CompilerSchema);
 
 
@@ -54,21 +56,21 @@ Compiler.findByCode = (code, callback) => {
 Compiler.getCompileCmd = (compiler, filename, errorFilename, inputFilename = false, outputFilename = false) => {
     let compileCmd = compiler.compile;
     compileCmd = compileCmd.replace(":source", Compiler.getFullFilename(compiler, filename));
-    compileCmd = compileCmd.replace(":destination", path.join("home", path.basename(filename)));   
-    compileCmd = compileCmd.replace(":error", errorFilename);     
+    compileCmd = compileCmd.replace(":destination", path.join("home", path.basename(filename)));
+    compileCmd = compileCmd.replace(":error", errorFilename);
     if(inputFilename) {
-        compileCmd = compileCmd.replace(":input", inputFilename);            
-    }   
+        compileCmd = compileCmd.replace(":input", inputFilename);
+    }
     if(outputFilename) {
-        compileCmd = compileCmd.replace(":output", outputFilename);            
+        compileCmd = compileCmd.replace(":output", outputFilename);
     }
     return compileCmd;
 }
 Compiler.getRunCmd = (compiler, filename, inputFilename, outputFileName) => {
     let runCmd = compiler.run;
     runCmd = runCmd.replace(":source", path.join("home", path.basename(filename)));
-    runCmd = runCmd.replace(":output", outputFileName); 
-    runCmd = runCmd.replace(":input", inputFilename)       
+    runCmd = runCmd.replace(":output", outputFileName);
+    runCmd = runCmd.replace(":input", inputFilename)
     return runCmd;
 }
 Compiler.getFullFilename = (compiler, filename) => {
@@ -77,25 +79,25 @@ Compiler.getFullFilename = (compiler, filename) => {
 
 Compiler.compile = (compiler, code, input, callback, uid = 0) => {
     // Unique directory to compile program
-    const compileDirectory = path.join(appRootPath.path, 'tmp', uniqid('compile-'));    
+    const compileDirectory = path.join(appRootPath.path, 'tmp', uniqid('compile-'));
     // Create directory if not exists
     if(!fs.existsSync(compileDirectory)) {
         fs.mkdirSync(compileDirectory);
     }
     // Command to be executed inside the container
-    let containerCmd = "";            
+    let containerCmd = "";
     let codeFilename = path.join(compileDirectory, Compiler.getFullFilename(compiler, 'solution'));
     // To make sure all the filenames are unique
     let errorFilename = uniqid("error-") +  ".compile";
     let inputFilename = uniqid("input-") + ".run";
     let outputFilename = uniqid("output-") + ".run";
     fs.writeFileSync(path.join(compileDirectory, inputFilename), input);
-    fs.writeFileSync(codeFilename, code);            
+    fs.writeFileSync(codeFilename, code);
     if(compiler.run.length == 0) {
         // Its a scripting language and only needs interpretation
         const compileCmd = Compiler.getCompileCmd(compiler, Compiler.getVolumeFileName('solution'), Compiler.getVolumeFileName(errorFilename), Compiler.getVolumeFileName(inputFilename), Compiler.getVolumeFileName(outputFilename));
         // Run only the interpretation code
-        containerCmd = compileCmd;         
+        containerCmd = compileCmd;
     }
     else {
         const compileCmd = Compiler.getCompileCmd(compiler, Compiler.getVolumeFileName('solution'),Compiler.getVolumeFileName(errorFilename), Compiler.getVolumeFileName(inputFilename));
@@ -111,37 +113,37 @@ Compiler.compile = (compiler, code, input, callback, uid = 0) => {
             container.inspect((err, data) => {
                 if(data.State.Running) {
                     // Close the container
-                    container.stop((err, data) => {});   
+                    container.stop((err, data) => {});
                     callback({ error: false, compiled: true, timeout: true, msg: '' });
                 }
-            });        
+            });
         }, compiler.timeout * 1000);
     })
     .on('data', (data) => {
         // Send data only if container not closed forcefully
         if(data.StatusCode != 137) {
             // Check if the testcase was satisfied
-            let errors = fs.readFileSync(path.join(compileDirectory, errorFilename)).toString();            
+            let errors = fs.readFileSync(path.join(compileDirectory, errorFilename)).toString();
             if(errors.length > 0) {
                 callback({ error: true, compiled: false, timeout: false, msg: errors });
             }
             else{
-                let output = fs.readFileSync(path.join(compileDirectory, outputFilename)).toString();    
+                let output = fs.readFileSync(path.join(compileDirectory, outputFilename)).toString();
                 callback({ error: false, compiled: true, timeout: false, msg: output });
             }
         }
-        // Delete the created compiling folder        
+        // Delete the created compiling folder
         rmdir(compileDirectory, (err) => {
             if(err) {
                 // TODO: Handle errors if needed
             }
         });
-    }); 
+    });
 }
 Compiler.compileMany = (compiler, code, inputs, compiledAllCallback, compiledOneCallback) => {
     let outputs = [];
     let compiledCount = 0;
-    inputs.forEach((input, index) => {   
+    inputs.forEach((input, index) => {
         Compiler.compile(compiler, code, input, (output) => {
             outputs[index] = output;
             compiledCount++;

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const URLSlugs = require('mongoose-url-slugs');
+const User = require('./user');
 
 const TestCaseSchema = new mongoose.Schema({
     input: {
@@ -13,41 +14,45 @@ const TestCaseSchema = new mongoose.Schema({
 });
 
 const ChallengeSchema = mongoose.Schema({
-    'title': {
+    title: {
         type: String,
         rquired: true
     },
-    'problemStatement': {
+    problemStatement: {
         type: String,
         required: true
     },
-    'inputFormat': {
+    inputFormat: {
         type: String,
         required: true
     },
-    'outputFormat': {
+    outputFormat: {
         type: String,
         required: true
     }, 
-    'constraints': {
+    constraints: {
         type: String,
         required: true
     },
-    'sampleInput': {
+    sampleInput: {
         type: String,
         required: true
     },
-    'sampleOutput': {
+    sampleOutput: {
         type: String,
         required: true
     },
-    'explanation': {
+    explanation: {
         type: String,
         required: true
     },
-    'testCases': {
+    testCases: {
         type: Array,
         Schema: TestCaseSchema,
+        required: true
+    },
+    userId: {
+        type: String,
         required: true
     }
 });
