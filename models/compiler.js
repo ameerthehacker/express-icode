@@ -38,8 +38,6 @@ const CompilerSchema = mongoose.Schema({
     }
 });
 
-// TODO: The compilation fails sometimes causing can't set headers after response is sent!
-
 const Compiler = mongoose.model('Compiler', CompilerSchema);
 
 
