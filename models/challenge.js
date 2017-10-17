@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const URLSlugs = require('mongoose-url-slugs');
-const User = require('./user');
+const Schema = mongoose.SchemaTypes;
 
 const TestCaseSchema = new mongoose.Schema({
     input: {
@@ -12,6 +12,7 @@ const TestCaseSchema = new mongoose.Schema({
         required: true
     }
 });
+
 
 const ChallengeSchema = mongoose.Schema({
     title: {
@@ -52,8 +53,8 @@ const ChallengeSchema = mongoose.Schema({
         required: true
     },
     userId: {
-        type: String,
-        required: true
+        type: Schema.ObjectId,
+        ref: 'User'
     }
 });
 

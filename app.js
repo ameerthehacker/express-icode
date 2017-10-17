@@ -15,10 +15,10 @@ const passport = require('passport');
 
 mongoose.connect(config.database.name);
 mongoose.connection.on('connected', () => {
-  console.log('Connected to database: ' + config.database.name);
+  console.info(`Connected to database: ${config.database.name}`);
 });
 mongoose.connection.on('error', (err) => {
-  console.log('Unable to connect to MongoDB ' + err);
+  console.info(`Unable to connect to MongoDB ${config.database.name}`);
 });
 
 

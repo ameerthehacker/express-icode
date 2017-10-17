@@ -1,0 +1,46 @@
+[
+    { 
+        "language" : "Python", 
+        "code" : "2", 
+        "image" : "python", 
+        "compile" : "python :source  < :input > :output 2> :error", 
+        "run" : "", 
+        "extension" : "py", 
+        "mode" : "text/x-python", 
+        "boilerplate" : "print('Hello World!')",
+        "timeout" : 10
+    },
+    { 
+        "language" : "C", 
+        "code" : "1", 
+        "image" : "gcc", 
+        "compile" : "cc :source -o :destination 2> :error", 
+        "run" : ":source < :input > :output ", 
+        "extension" : "c", 
+        "mode" : "text/x-csrc", 
+        "boilerplate" : "#include<stdio.h>\n\nint main() {\n  printf(\"Hello World!\"); \n  return 0;\n}", 
+        "timeout" : 2
+    },
+    { 
+        "language" : "C++", 
+        "code" : "3", 
+        "image" : "gcc", 
+        "compile" : "c++ :source -o :destination 2> :error", 
+        "run" : ":source < :input > :output ", 
+        "extension" : "cpp", 
+        "mode" : "text/x-c++src", 
+        "boilerplate" : "#include<iostream>\n\nusing namespace std;\n\nint main() {\n  cout<<\"Hello World\";\n  return 0;\n}", 
+        "timeout" : 2
+    },
+    { 
+        "language" : "PHP", 
+        "code" : "4", 
+        "image" : "php", 
+        "compile" : "php  :source  < :input > :output 2> :error", 
+        "run" : "", 
+        "extension" : "php", 
+        "mode" : "text/x-php", 
+        "boilerplate" : "<?php \n\tfprintf(STDOUT, \"Hello World!\");\n?>", 
+        "timeout" : 10
+    }
+]

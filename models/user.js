@@ -28,13 +28,6 @@ const UserSchema = new mongoose.Schema({
     gender: {
         type: String,
         required: true
-    },
-    challengeId: {
-        type: String,
-        required: true
-    },
-    challenge: {
-        type: Object
     }
 });
 

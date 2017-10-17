@@ -1,0 +1,56 @@
+[
+    { 
+        "title" : "Fun with loops", 
+        "problemStatement" : "Print the numbers in order from 1 to N", 
+        "inputFormat" : "An integer denoting N", 
+        "outputFormat" : "A list of integers from 1 to N seperated by line breaks", 
+        "constraints" : "1 <= N <= 1000", 
+        "sampleInput" : "3\n", 
+        "sampleOutput" : "1\n2\n3\n", 
+        "explanation" : "The given N is 3 so its printed from  1 to 3", 
+        "userId" : "59a05aada1a0b221a9caac23", 
+        "slug": "fun-with-loops",
+        "testCases" : [
+            {
+                "output" : "1\n2\n3\n4\n", 
+                "input" : "4"
+            }, 
+            {
+                "output" : "1\n2\n3\n", 
+                "input" : "3"
+            }, 
+            {
+                "output" : "1\n2\n3\n4\n5\n", 
+                "input" : "5"
+            }, 
+            {
+                "output" : "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n", 
+                "input" : "10"
+            }, 
+            {
+                "output" : "1\n2\n3\n4\n5\n6\n7\n", 
+                "input" : "7"
+            }, 
+            {
+                "output" : "1\n", 
+                "input" : "1"
+            }, 
+            {
+                "output" : "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n", 
+                "input" : "11"
+            }, 
+            {
+                "output" : "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n", 
+                "input" : "10"
+            }, 
+            {
+                "output" : "1\n2\n3\n4\n5\n6\n7\n8\n9\n", 
+                "input" : "9"
+            }, 
+            {
+                "output" : "1\n2\n3\n4\n5\n6\n", 
+                "input" : "6"
+            }
+        ]
+    }
+]

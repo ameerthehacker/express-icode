@@ -1,0 +1,20 @@
+[
+    { 
+        "username" : "ameerthehacker", 
+        "email" : "ameerjhanprof@gmail.com", 
+        "password" : "$2y$10$8Q1dIpClMIJfHv2yRmzmW.CMuCyw.lYJatzcx46ptwaooQI/Fi8/i", 
+        "firstName" : "Ameer", 
+        "lastName" : "Jhan", 
+        "age" : 19.0, 
+        "gender" : "male"
+    },
+    { 
+        "username" : "viswanath", 
+        "email" : "viswa@gmail.com", 
+        "password" : "$2y$10$8Q1dIpClMIJfHv2yRmzmW.CMuCyw.lYJatzcx46ptwaooQI/Fi8/i", 
+        "firstName" : "Viswanath", 
+        "lastName" : "", 
+        "age" : 21.0, 
+        "gender" : "male"
+    }
+]

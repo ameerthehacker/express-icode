@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "db:seed": "node seed.js"
   },
   "dependencies": {
     "app-root-path": "^2.0.1",

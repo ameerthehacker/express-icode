@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.SchemaTypes;
 
 const SubmissionSchema = mongoose.Schema({
     challengeId: {
-        type: String, 
-        required: true
+        type: Schema.ObjectId,
+        ref: 'Challenge'
     },
     userId: {
-        type: String,
-        required: true
+        type: Schema.ObjectId,
+        ref: 'User'
     },
     langCode: {
         type: String,

@@ -25,8 +25,7 @@ const CompilerSchema = mongoose.Schema({
         required: true
     },
     run: {
-        type: String,
-        required: true
+        type: String
     },
     timeout: {
         type: Number,
