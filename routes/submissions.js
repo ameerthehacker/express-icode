@@ -7,6 +7,20 @@ const emitter = require('events').EventEmitter;
 
 emitter.defaultMaxListeners = 100;
 
+function handleRequestError(err, object, res) {
+    // There was an internal server error
+    if(err) {
+        res.sendStatus(500);
+        return true;
+    }
+    // If the challenge was not found
+    if(!object) {
+        res.sendStatus(404);
+        return true;
+    }
+    return false;
+}
+
 function saveSubmission(submission, code, points, callback) {
     // Save the submission
     Submission.findOne(submission, (err, oldSubmission) => {
@@ -30,8 +44,24 @@ function saveSubmission(submission, code, points, callback) {
     });
 }
 
-router.get('/', (req, res, next) => {
-    
+router.get('/:langCode', (req, res, next) => {
+   const langCode = req.params.langCode; 
+   const challengeSlug = req.params.slug;
+   
+   Challenge.findBySlug(challengeSlug, (err, challenge) => {
+       if(handleRequestError(err, challenge, res)) { return; }    
+       Submission.findOne({ langCode: langCode, challengeId: challenge.id, userId: req.user.id }, (err, submission) => {
+           if(!err && submission) {
+               let result = { submissionFound: true }
+               result.submission = submission;
+               res.send(result);
+           }
+           else {
+               let result = { submissionFound: false }
+               res.send(result);
+           }
+       });
+   });
 });
 router.post('/', (req, res, next) => {
     // To make sure that express dont discard the current request while compiling
@@ -40,10 +70,11 @@ router.post('/', (req, res, next) => {
     const langCode = req.body.langCode;
     const code = req.body.code;
     const challengeSlug = req.params.slug; 
+
     Compiler.findByCode(langCode, (err, compiler) => {
         if(!err && compiler) {
             Challenge.findBySlug(challengeSlug, (err, challenge) => {
-                // Submission details
+                if(handleRequestError(err, challenge, res)) { return; }
                 let submission = {
                     challengeId: challenge.id,
                     userId: req.user.id,
