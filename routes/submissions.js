@@ -4,22 +4,9 @@ const Challenge = require('../models/challenge');
 const Compiler = require('../models/compiler');
 const Submission = require('../models/submission');
 const emitter = require('events').EventEmitter;
+const checkRequest = require('./checkRequest');
 
 emitter.defaultMaxListeners = 100;
-
-function handleRequestError(err, object, res) {
-    // There was an internal server error
-    if(err) {
-        res.sendStatus(500);
-        return true;
-    }
-    // If the challenge was not found
-    if(!object) {
-        res.sendStatus(404);
-        return true;
-    }
-    return false;
-}
 
 function saveSubmission(submission, code, points, callback) {
     // Save the submission
@@ -49,7 +36,7 @@ router.get('/:langCode', (req, res, next) => {
    const challengeSlug = req.params.slug;
    
    Challenge.findBySlug(challengeSlug, (err, challenge) => {
-       if(handleRequestError(err, challenge, res)) { return; }    
+       if(checkRequest(err, challenge, res)) { return; }    
        Submission.findOne({ langCode: langCode, challengeId: challenge.id, userId: req.user.id }, (err, submission) => {
            if(!err && submission) {
                let result = { submissionFound: true }
@@ -74,7 +61,7 @@ router.post('/', (req, res, next) => {
     Compiler.findByCode(langCode, (err, compiler) => {
         if(!err && compiler) {
             Challenge.findBySlug(challengeSlug, (err, challenge) => {
-                if(handleRequestError(err, challenge, res)) { return; }
+                if(checkRequest(err, challenge, res)) { return; }
                 let submission = {
                     challengeId: challenge.id,
                     userId: req.user.id,
