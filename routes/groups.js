@@ -18,13 +18,15 @@ router.get('/:slug', (req, res, next) => {
         res.send({ err: false, msg: group });
     });
 });
+function initGroupFromRequest(req) {
+    let group = {};
+    group.name = req.body.name;
+    group.description = req.body.description;
+    group.userId = req.user.id;
+    return group;
+}
 router.post('/', (req, res, next) => {
-    let group = {
-        name: req.body.name,
-        description: req.body.description,
-        userId: req.user.id
-    };
-    let newGroup = new Group(group);
+    let newGroup = new Group(initGroupFromRequest(req));
     
     newGroup.save((err) => {
         if(!err) {
@@ -37,11 +39,7 @@ router.post('/', (req, res, next) => {
 });
 router.put('/:slug', (req, res, next) => {
     const groupSlug = req.params.slug;
-    let updatedGroup = {
-        name: req.body.name,
-        description: req.body.description,
-        userId: req.user.id
-    };
+    let updatedGroup = initGroupFromRequest(req);
 
     Group.findBySlug(groupSlug, (err, group) => {
         if(checkRequest(err, group, res)) { return; }

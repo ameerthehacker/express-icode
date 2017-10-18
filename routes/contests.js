@@ -67,8 +67,8 @@ router.put('/:contestSlug', (req, res, next) => {
     Contest.findBySlug(contestSlug, (err, contest) => {
         if(checkRequest(err, contest, res)) { return; }   
         if(contest.userId == req.user.id) {
-            let contest = initContestFromRequest(req);
-            Contest.update({ slug: contestSlug }, contest, (err) => {
+            let updatedContest = initContestFromRequest(req);
+            Contest.update({ slug: contestSlug }, updatedContest, (err) => {
                 if(!err) {
                     res.json({ error: false });
                 }

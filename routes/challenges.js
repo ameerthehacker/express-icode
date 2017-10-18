@@ -14,8 +14,9 @@ router.get('/', (req, res, next) => {
         }
     });
 });
-router.post('/', (req, res, next) => {
+function initChallengeFromRequest(req) {
     let challenge = {};
+
     challenge.title = req.body.title;    
     challenge.problemStatement = req.body.problemStatement;
     challenge.inputFormat = req.body.inputFormat;
@@ -26,8 +27,11 @@ router.post('/', (req, res, next) => {
     challenge.explanation = req.body.explanation;
     challenge.testCases = req.body.testCases;
     challenge.userId = req.user.id;
-
-    newChallenge = new Challenge(challenge);
+    
+    return challenge;
+}
+router.post('/', (req, res, next) => {
+    newChallenge = new Challenge(initChallengeFromRequest(req));
     newChallenge.save((err) => {
         if(!err){
             res.json({ error: false });
@@ -46,16 +50,7 @@ router.get('/:slug', (req, res, next) => {
 });
 router.put('/:slug', (req, res, next) => {
     let slug = req.params.slug;
-    let challenge = {};
-    challenge.title = req.body.title;    
-    challenge.problemStatement = req.body.problemStatement;
-    challenge.inputFormat = req.body.inputFormat;
-    challenge.outputFormat = req.body.outputFormat;
-    challenge.constraints = req.body.constraints;    
-    challenge.sampleInput = req.body.sampleInput;        
-    challenge.sampleOutput = req.body.sampleOutput;    
-    challenge.explanation = req.body.explanation;
-    challenge.testCases = req.body.testCases;
+    let challenge = initChallengeFromRequest(req);
     Challenge.update({ slug: slug }, challenge, (err) => {
         if(!err){
             res.json({ error: false });
