@@ -12,11 +12,11 @@ function saveSubmission(submission, code, points, callback) {
     // Save the submission
     Submission.findOne(submission, (err, oldSubmission) => {
         if(!err && oldSubmission) {           
-            let newSubmission = Object.create(submission);
-            newSubmission.code = code;
-            newSubmission.points = points;
-            newSubmission.timeOfSubmission = Date.now();
-            Submission.update(submission, newSubmission, (err) => {
+            let updatedSubmission = Object.create(oldSubmission);
+            updatedSubmission.code = code;
+            updatedSubmission.points = points;
+            updatedSubmission.timeOfSubmission = Date.now();
+            Submission.update(submission, updatedSubmission, (err) => {
                 callback(err);
             });
         }
@@ -57,6 +57,8 @@ router.post('/', (req, res, next) => {
     const langCode = req.body.langCode;
     const code = req.body.code;
     const challengeSlug = req.params.slug; 
+    const typeOfSubmission = req.body.typeOfSubmission;
+    const submittedForId = req.body.submittedForId;
 
     Compiler.findByCode(langCode, (err, compiler) => {
         if(!err && compiler) {
@@ -65,7 +67,9 @@ router.post('/', (req, res, next) => {
                 let submission = {
                     challengeId: challenge.id,
                     userId: req.user.id,
-                    langCode: langCode
+                    langCode: langCode,
+                    typeOfSubmission: typeOfSubmission,
+                    submittedForId: submittedForId
                 };
                 let pointsPerTestCase = 100.0 / challenge.testCases.length;
                 // Test Sample test case

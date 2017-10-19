@@ -24,6 +24,13 @@ const SubmissionSchema = mongoose.Schema({
     timeOfSubmission: {
         type: Date,
         default: Date.now()
+    },
+    typeOfSubmission: {
+        type: String,
+        required: true
+    },
+    submittedForId: {
+        type: String
     }
 });
 
