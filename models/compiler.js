@@ -88,6 +88,7 @@ Compiler.compile = (compiler, code, input, callback, uid = 0) => {
     let errorFilename = uniqid("error-") +  ".compile";
     let inputFilename = uniqid("input-") + ".run";
     let outputFilename = uniqid("output-") + ".run";
+    let containerStartTime;
     fs.writeFileSync(path.join(compileDirectory, inputFilename), input);
     fs.writeFileSync(codeFilename, code);
     if(compiler.run.length == 0) {
@@ -106,17 +107,20 @@ Compiler.compile = (compiler, code, input, callback, uid = 0) => {
     docker.run(compiler.image, ['sh', '-c', containerCmd], process.stdout, { Volumes: { '/volume': {} }, 'Binds': [ compileDirectory + ':/volume:rw' ] }, (err, data) => {
     })
     .on('start', (container) => {
+        containerStartTime = Date.now();
         setTimeout(() => {
             container.inspect((err, data) => {
                 if(data.State.Running) {
                     // Close the container
                     container.stop((err, data) => {});
-                    callback({ error: false, compiled: true, timeout: true, msg: '' });
+                    callback({ error: false, compiled: true, timeout: true, msg: '', timeTaken: '-' });
                 }
             });
         }, compiler.timeout * 1000);
     })
     .on('data', (data) => {
+        // Find the time taken in seconds
+        let timeTaken = (Date.now() - containerStartTime) /1000;
         // Send data only if container not closed forcefully
         if(data.StatusCode != 137) {
             // Check if the testcase was satisfied
@@ -126,7 +130,7 @@ Compiler.compile = (compiler, code, input, callback, uid = 0) => {
             }
             else{
                 let output = fs.readFileSync(path.join(compileDirectory, outputFilename)).toString();
-                callback({ error: false, compiled: true, timeout: false, msg: output });
+                callback({ error: false, compiled: true, timeout: false, msg: output, timeTaken: `${timeTaken}s` });
             }
         }
         // Delete the created compiling folder
@@ -145,7 +149,7 @@ Compiler.compileMany = (compiler, code, inputs, compiledAllCallback, compiledOne
             outputs[index] = output;
             compiledCount++;
             if(compiledOneCallback) {
-                compiledOneCallback(output);
+                compiledOneCallback({ index: index, output: output});
             }
             if(inputs.length == compiledCount) {
                 compiledAllCallback(outputs);
