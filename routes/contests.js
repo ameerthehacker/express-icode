@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true });
 const Group = require('../models/group');
+const Challenge = require('../models/challenge');
 const Contest = require('../models/contest');
 const checkRequest = require('./checkRequest');
 const date = require('date-and-time');
@@ -27,6 +28,20 @@ router.get('/:contestSlug', (req, res, next) => {
         Contest.findBySlug(contestSlug, (err, contest) => {
             if(checkRequest(err, contest, res)) { return; }        
             res.json({ error: false, msg: contest });
+        });
+    });
+});
+router.get('/:contestSlug/challenges', (req, res, next) => {
+    let groupSlug = req.params.slug;
+    let contestSlug = req.params.contestSlug;
+    Group.findBySlug(groupSlug, (err, group) => {
+        if(checkRequest(err, group, res)) { return; }
+        Contest.findBySlug(contestSlug, (err, contest) => {
+            if(checkRequest(err, contest, res)) { return; }   
+            Challenge.find().where('_id').in(contest.challenges).exec((err, challenges) => {
+                if(checkRequest(err, contest, res)) { return; }  
+                res.json({ error: false, msg: challenges });            
+            });
         });
     });
 });
