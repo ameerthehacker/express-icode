@@ -3,6 +3,7 @@ const router = express.Router({ mergeParams: true });
 const Group = require('../models/group');
 const Challenge = require('../models/challenge');
 const Contest = require('../models/contest');
+const ContestRegistration = require('../models/contest-registration');
 const checkRequest = require('./checkRequest');
 const date = require('date-and-time');
 
@@ -10,12 +11,32 @@ router.get('/', (req, res, next) => {
     let groupSlug = req.params.slug;
     Group.findBySlug(groupSlug, (err, group) => {
         if(checkRequest(err, group, res)) { return; }
+        let contestDetails = [];
         Contest.find({ groupId: group.id }, (err, contests) => {
             if(!err) {
-                res.json({ error: false, msg: contests });
+                let processedContests = 0;
+                contests.forEach(function(contest) {
+                    // Covert mongoose model into pojo                
+                    let contestDetail = contest.toJSON();
+                    // Add fields for contest is open and whether user can participating
+                    contestDetail.isOpen = Contest.isOpen(contest);
+                    ContestRegistration.isUserRegistered(contest._id, req.user.id, (err, registration) => {
+                        if(!err && registration) {
+                            contestDetail.userRegistered = true;
+                        }
+                        else {
+                            contestDetail.userRegistered = false;
+                        }
+                        contestDetails.push(contestDetail);
+                        processedContests++;
+                        if(processedContests == contests.length) {
+                            res.json({ error: false, msg: contestDetails });
+                        }
+                    });
+                });
             }
             else {
-                res.json({ error: true, msg: [err] });                
+                res.json({ error: true, msg: [err] });                   
             }
         });
     });
@@ -26,9 +47,54 @@ router.get('/:contestSlug', (req, res, next) => {
     Group.findBySlug(groupSlug, (err, group) => {
         if(checkRequest(err, group, res)) { return; }
         Contest.findBySlug(contestSlug, (err, contest) => {
-            if(checkRequest(err, contest, res)) { return; }        
-            res.json({ error: false, msg: contest });
+            if(checkRequest(err, contest, res)) { return; } 
+            ContestRegistration.isUserRegistered(contest._id, req.user.id, (err, registration) => {
+                let contestDetail = contest.toJSON();
+                contestDetail.isOpen = Contest.isOpen(contest);
+                if(!err && registration) {
+                    contestDetail.userRegistered = true;
+                }
+                else {
+                    contestDetail.userRegistered = false;
+                }
+                res.json({ error: false, msg: contestDetail });            
+            });
         });
+    });
+});
+router.get('/:contestSlug/register', (req, res, next) => {
+    let contestSlug = req.params.contestSlug;
+    Contest.findBySlug(contestSlug, (err, contest) => {
+        if(checkRequest(err, contest)) { return; }
+        // Allow registration only if its open
+        if(Contest.isOpen(contest)) {
+            ContestRegistration.isUserRegistered(contest._id, req.user.id, (err, registration) => {
+                if(!err) {
+                    if(registration) {
+                        res.json({ error: true, msg: 'You have already registered for this contest' });
+                    }
+                    else {
+                        let contestRegistration = new ContestRegistration();
+                        contestRegistration.userId = req.user.id;
+                        contestRegistration.contestId = contest._id;
+                        contestRegistration.save((err, contestRegistration) => {
+                            if(!err) {
+                                res.json({ error: false });
+                            }
+                            else {
+                                res.json({ error: true, msg: [err] });
+                            }
+                        });
+                    }
+                }
+                else {
+                    res.sendStatus(500);
+                }
+            });
+        }
+        else {
+            res.json({ error: true, msg: 'Registrations are closed' });
+        }
     });
 });
 router.get('/:contestSlug/challenges', (req, res, next) => {

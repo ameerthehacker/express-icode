@@ -45,4 +45,16 @@ ContestSchema.plugin(URLSlugs('title'));
 
 const Contest = mongoose.model('Contest', ContestSchema);
 
+Contest.isOpen = (contest) => {
+    let registrationStartDate = new Date(contest.registrationStartDate);
+    let registrationEndDate = new Date(contest.registrationEndDate);
+    let contestStartDate = new Date(contest.contestStartDate);    
+    if(Date.now() <= registrationEndDate.getTime() && Date.now() >= registrationStartDate.getTime()) {
+        return true;
+    }  
+    else {
+        return false;
+    }  
+}
+
 module.exports = Contest;

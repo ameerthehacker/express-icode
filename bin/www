@@ -37,7 +37,6 @@ server.on('listening', onListening);
 
 // Listen for connections in socket
 socketio.on('connection', (socket) => {
-  console.log('someone connected');
 });
 
 function normalizePort(val) {
