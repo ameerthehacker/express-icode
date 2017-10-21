@@ -15,7 +15,7 @@ const ContestRegistrationSchema = mongoose.Schema({
 const ContestRegistration = mongoose.model('ContestRegistration', ContestRegistrationSchema);
 
 ContestRegistration.isUserRegistered = (contestId, userId, callback) => {
-    ContestRegistration.find({ contestId: contestId, userId: userId }, (err, registration) => {
+    ContestRegistration.findOne({ contestId: contestId, userId: userId }, (err, registration) => {
         callback(err, registration);
     });
 }

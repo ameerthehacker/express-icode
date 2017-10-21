@@ -19,6 +19,7 @@ router.get('/', (req, res, next) => {
                     // Covert mongoose model into pojo                
                     let contestDetail = contest.toJSON();
                     // Add fields for contest is open and whether user can participating
+                    contestDetail.isRunning = Contest.isRunning(contest);
                     contestDetail.isOpen = Contest.isOpen(contest);
                     ContestRegistration.isUserRegistered(contest._id, req.user.id, (err, registration) => {
                         if(!err && registration) {
@@ -51,6 +52,7 @@ router.get('/:contestSlug', (req, res, next) => {
             ContestRegistration.isUserRegistered(contest._id, req.user.id, (err, registration) => {
                 let contestDetail = contest.toJSON();
                 contestDetail.isOpen = Contest.isOpen(contest);
+                contestDetail.isRunning = Contest.isRunning(contest);
                 if(!err && registration) {
                     contestDetail.userRegistered = true;
                 }
