@@ -67,7 +67,7 @@ Contest.isRunning = (contest) => {
     // Convert the hour to miliseconds
     let contestDuration = contest.duration * 60 * 60 * 1000;
     let contestEndDate = contestStartDate.getTime() + contestDuration;
-    if(getIndianTime() <= contestEndDate) {
+    if(getIndianTime() >= contestStartDate && getIndianTime() <= contestEndDate) {
         return true;
     }
     else {
