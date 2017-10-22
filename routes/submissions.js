@@ -149,6 +149,7 @@ router.post('/', (req, res, next) => {
                         }
                     }
                     else{
+                        socketio.emit(uid, { 'type': 'sampleTestCase', result:  result });                               
                         // Save the submission
                         saveSubmission(submission, code, points, (err) => {
                             if(err) {
