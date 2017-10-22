@@ -14,6 +14,9 @@ router.get('/', (req, res, next) => {
         let contestDetails = [];
         Contest.find({ groupId: group.id }, (err, contests) => {
             if(!err) {
+                if(contests.length == 0) {
+                    res.json({ err: false, msg: [] });
+                }
                 let processedContests = 0;
                 contests.forEach(function(contest) {
                     // Covert mongoose model into pojo                

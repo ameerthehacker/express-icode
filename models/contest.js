@@ -63,10 +63,10 @@ Contest.isOpen = (contest) => {
     }  
 }
 Contest.isRunning = (contest) => {
-    let contestStartDate = new Date(contest.contestStartDate);   
+    let contestStartDate = new Date(contest.contestStartDate).getTime();   
     // Convert the hour to miliseconds
     let contestDuration = contest.duration * 60 * 60 * 1000;
-    let contestEndDate = contestStartDate.getTime() + contestDuration;
+    let contestEndDate = contestStartDate + contestDuration;
     if(getIndianTime() >= contestStartDate && getIndianTime() <= contestEndDate) {
         return true;
     }
