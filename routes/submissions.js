@@ -34,18 +34,23 @@ function saveSubmission(submission, code, points, callback) {
 router.get('/:langCode', (req, res, next) => {
    const langCode = req.params.langCode; 
    const challengeSlug = req.params.slug;
-   
+   const typeOfSubmission = req.query.type != 'undefined' ? req.query.type: 'practice';
+   const submittedForId = req.query.for != 'undefined' ? req.query.for: false;
    Challenge.findBySlug(challengeSlug, (err, challenge) => {
        if(checkRequest(err, challenge, res)) { return; }    
-       Submission.findOne({ langCode: langCode, challengeId: challenge.id, userId: req.user.id }, (err, submission) => {
+       let query = { langCode: langCode, challengeId: challenge.id, userId: req.user.id, typeOfSubmission: typeOfSubmission };
+       if(submittedForId) {
+           query.submittedForId = submittedForId;
+       }
+       Submission.findOne(query, (err, submission) => {
            if(!err && submission) {
                let result = { submissionFound: true }
                result.submission = submission;
-               res.send(result);
+               res.json(result);
            }
            else {
                let result = { submissionFound: false }
-               res.send(result);
+               res.json(result);
            }
        });
    });
