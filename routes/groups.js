@@ -4,6 +4,7 @@ const Group = require('../models/group');
 const checkRequest = require('./checkRequest');
 const contests = require('./contests');
 const assignments = require('./assignments');
+const labWorks = require('./lab-works');
 
 router.get('/', (req, res, next) => {
     Group.getAllGroups((err, groups) => {
@@ -84,5 +85,6 @@ router.delete('/:slug', (req, res, next) => {
 // Nested routes for contests
 router.use('/:slug/contests', contests);
 router.use('/:slug/assignments', assignments);
+router.use('/:slug/lab-works', labWorks);
 
 module.exports = router;
