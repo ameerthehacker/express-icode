@@ -84,6 +84,8 @@ Compiler.compile = (compiler, code, input, callback, uid = 0) => {
     // Command to be executed inside the container
     let containerCmd = "";
     let codeFilename = path.join(compileDirectory, Compiler.getFullFilename(compiler, 'solution'));
+    // Flag to avoid sending results after timeout
+    let resultSent = false;
     // To make sure all the filenames are unique
     let errorFilename = uniqid("error-") +  ".compile";
     let inputFilename = uniqid("input-") + ".run";
@@ -111,9 +113,12 @@ Compiler.compile = (compiler, code, input, callback, uid = 0) => {
         setTimeout(() => {
             container.inspect((err, data) => {
                 if(data.State.Running) {
-                    // Close the container
-                    container.stop((err, data) => {});
-                    callback({ error: false, compiled: true, timeout: true, msg: '', timeTaken: '-' });
+                    if(!resultSent) {
+                        resultSent = true;
+                        // Close the container
+                        container.stop((err, data) => {});
+                        callback({ error: false, compiled: true, timeout: true, msg: '', timeTaken: '-' });                        
+                    }
                 }
             });
         }, compiler.timeout * 1000);
@@ -123,14 +128,17 @@ Compiler.compile = (compiler, code, input, callback, uid = 0) => {
         let timeTaken = (Date.now() - containerStartTime) /1000;
         // Send data only if container not closed forcefully
         if(data.StatusCode != 137) {
-            // Check if the testcase was satisfied
-            let errors = fs.readFileSync(path.join(compileDirectory, errorFilename)).toString();
-            if(errors.length > 0) {
-                callback({ error: true, compiled: false, timeout: false, msg: errors });
-            }
-            else{
-                let output = fs.readFileSync(path.join(compileDirectory, outputFilename)).toString();
-                callback({ error: false, compiled: true, timeout: false, msg: output, timeTaken: `${timeTaken}s` });
+            if(!resultSent) {
+                resultSent = true;
+                // Check if the testcase was satisfied
+                let errors = fs.readFileSync(path.join(compileDirectory, errorFilename)).toString();
+                if(errors.length > 0) {
+                    callback({ error: true, compiled: false, timeout: false, msg: errors });
+                }
+                else{
+                    let output = fs.readFileSync(path.join(compileDirectory, outputFilename)).toString();
+                    callback({ error: false, compiled: true, timeout: false, msg: output, timeTaken: `${timeTaken}s` });
+                }
             }
         }
         // Delete the created compiling folder
