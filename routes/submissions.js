@@ -120,6 +120,7 @@ router.post('/', (req, res, next) => {
                                     else {
                                         result.submissionSaved = true;
                                     }
+                                    result.points = points;
                                     res.json(result);             
                                 });
                             }, (result) => {
@@ -144,6 +145,7 @@ router.post('/', (req, res, next) => {
                                 else {
                                     result.submissionSaved = true;
                                 }
+                                result.points = points;                         
                                 res.json(result);             
                             });
                         }
@@ -158,6 +160,7 @@ router.post('/', (req, res, next) => {
                             else {
                                 result.submissionSaved = true;
                             }
+                            result.points = points;                            
                             res.json(result);             
                         });
                     }
