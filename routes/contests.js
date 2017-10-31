@@ -6,18 +6,22 @@ const Contest = require('../models/contest');
 const ContestRegistration = require('../models/contest-registration');
 const checkRequest = require('./checkRequest');
 const date = require('date-and-time');
+const User = require('../models/user');
 
 router.get('/', (req, res, next) => {
     let groupSlug = req.params.slug;
+
     Group.findBySlug(groupSlug, (err, group) => {
         if(checkRequest(err, group, res)) { return; }
         let contestDetails = [];
+
         Contest.find({ groupId: group.id }, (err, contests) => {
             if(!err) {
                 if(contests.length == 0) {
                     res.json({ err: false, msg: [] });
                 }
                 let processedContests = 0;
+
                 contests.forEach(function(contest) {
                     // Covert mongoose model into pojo                
                     let contestDetail = contest.toJSON();
@@ -48,12 +52,14 @@ router.get('/', (req, res, next) => {
 router.get('/:contestSlug', (req, res, next) => {
     let groupSlug = req.params.slug;
     let contestSlug = req.params.contestSlug;
+
     Group.findBySlug(groupSlug, (err, group) => {
         if(checkRequest(err, group, res)) { return; }
         Contest.findBySlug(contestSlug, (err, contest) => {
             if(checkRequest(err, contest, res)) { return; } 
             ContestRegistration.isUserRegistered(contest._id, req.user.id, (err, registration) => {
                 let contestDetail = contest.toJSON();
+
                 contestDetail.isOpen = Contest.isOpen(contest);
                 contestDetail.isRunning = Contest.isRunning(contest);
                 if(!err && registration) {
@@ -69,6 +75,7 @@ router.get('/:contestSlug', (req, res, next) => {
 });
 router.get('/:contestSlug/register', (req, res, next) => {
     let contestSlug = req.params.contestSlug;
+
     Contest.findBySlug(contestSlug, (err, contest) => {
         if(checkRequest(err, contest)) { return; }
         // Allow registration only if its open
@@ -80,6 +87,7 @@ router.get('/:contestSlug/register', (req, res, next) => {
                     }
                     else {
                         let contestRegistration = new ContestRegistration();
+                        
                         contestRegistration.userId = req.user.id;
                         contestRegistration.contestId = contest._id;
                         contestRegistration.save((err, contestRegistration) => {
@@ -105,6 +113,7 @@ router.get('/:contestSlug/register', (req, res, next) => {
 router.get('/:contestSlug/challenges', (req, res, next) => {
     let groupSlug = req.params.slug;
     let contestSlug = req.params.contestSlug;
+
     Group.findBySlug(groupSlug, (err, group) => {
         if(checkRequest(err, group, res)) { return; }
         Contest.findBySlug(contestSlug, (err, contest) => {
@@ -118,6 +127,7 @@ router.get('/:contestSlug/challenges', (req, res, next) => {
 });
 function initContestFromRequest(req, group) {
     let contest = {};
+
     contest.title = req.body.title,
     contest.description = req.body.description;
     contest.registrationStartDate = date.parse(req.body.registrationStartDate, 'D/M/YYYY', true);;
@@ -133,27 +143,39 @@ function initContestFromRequest(req, group) {
     return contest;
 }
 router.post('/', (req, res, next) => {
-    let groupSlug = req.params.slug;
-    let contestSlug = req.params.contestSlug;    
-    Group.findBySlug(groupSlug, (err, group) => {
-        if(checkRequest(err, group, res)) { return; }
-        let contest = new Contest(initContestFromRequest(req, group));
-        contest.save((err) => {
-            if(!err) {
-                res.json({ error: false });
-            }
-            else {
-                res.json({ error: true, msg: [err] });
-            }
-        });
+    User.hasPermission(req.user, 'manage-contests', (err, status) => {
+        if(status) {
+            let groupSlug = req.params.slug;
+            let contestSlug = req.params.contestSlug;    
+
+            Group.findBySlug(groupSlug, (err, group) => {
+                if(checkRequest(err, group, res)) { return; }
+                let contest = new Contest(initContestFromRequest(req, group));
+        
+                contest.save((err) => {
+                    if(!err) {
+                        res.json({ error: false });
+                    }
+                    else {
+                        res.json({ error: true, msg: [err] });
+                    }
+                });
+            });
+        }
+        else {
+            // Forbidden access
+            res.send(403);
+        }
     });
 });
 router.put('/:contestSlug', (req, res, next) => {
-    let contestSlug = req.params.contestSlug;        
+    let contestSlug = req.params.contestSlug;  
+
     Contest.findBySlug(contestSlug, (err, contest) => {
         if(checkRequest(err, contest, res)) { return; }   
         if(contest.userId == req.user.id) {
             let updatedContest = initContestFromRequest(req);
+
             Contest.update({ slug: contestSlug }, updatedContest, (err) => {
                 if(!err) {
                     res.json({ error: false });
@@ -169,7 +191,8 @@ router.put('/:contestSlug', (req, res, next) => {
     });
 });
 router.delete('/:contestSlug', (req, res) => {
-    let contestSlug = req.params.contestSlug;        
+    let contestSlug = req.params.contestSlug;     
+
     Contest.findBySlug(contestSlug, (err, contest) => {
         if(checkRequest(err, contest, res)) { return; }   
         if(contest.userId == req.user.id) {

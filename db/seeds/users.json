@@ -6,7 +6,8 @@
         "firstName" : "Ameer", 
         "lastName" : "Jhan", 
         "age" : 19.0, 
-        "gender" : "male"
+        "gender" : "male",
+        "roles": []
     },
     { 
         "username" : "viswanath", 
@@ -15,6 +16,7 @@
         "firstName" : "Viswanath", 
         "lastName" : "", 
         "age" : 21.0, 
-        "gender" : "male"
+        "gender" : "male",
+        "roles": []
     }
 ]

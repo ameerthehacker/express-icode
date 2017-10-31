@@ -5,9 +5,11 @@ const Challenge = require('../models/challenge');
 const LabWork = require('../models/lab-work');
 const checkRequest = require('./checkRequest');
 const date = require('date-and-time');
+const User = require('../models/user');
 
 router.get('/', (req, res, next) => {
     let groupSlug = req.params.slug;
+
     Group.findBySlug(groupSlug, (err, group) => {
         if(checkRequest(err, group, res)) { return; }
         LabWork.find({ groupId: group.id }, (err, labWorks) => {
@@ -16,7 +18,8 @@ router.get('/', (req, res, next) => {
                     res.json({ err: false, msg: [] });
                 }
                 let processedLabWorks = 0;
-                let labWorkDetails = [];                
+                let labWorkDetails = [];   
+
                 labWorks.forEach(function(labWork) {
                     // Covert mongoose model into pojo                
                     let labWorkDetail = labWork.toJSON();
@@ -38,6 +41,7 @@ router.get('/', (req, res, next) => {
 router.get('/:labWorkSlug', (req, res, next) => {
     let groupSlug = req.params.slug;
     let labWorkSlug = req.params.labWorkSlug;
+
     Group.findBySlug(groupSlug, (err, group) => {
         if(checkRequest(err, group, res)) { return; }
         LabWork.findBySlug(labWorkSlug, (err, labWork) => {
@@ -54,6 +58,7 @@ router.get('/:labWorkSlug', (req, res, next) => {
 router.get('/:labWorkSlug/challenges', (req, res, next) => {
     let groupSlug = req.params.slug;
     let labWorkSlug = req.params.labWorkSlug;
+
     Group.findBySlug(groupSlug, (err, group) => {
         if(checkRequest(err, group, res)) { return; }
         LabWork.findBySlug(labWorkSlug, (err, labWork) => {
@@ -67,6 +72,7 @@ router.get('/:labWorkSlug/challenges', (req, res, next) => {
 });
 function initlabWorkFromRequest(req, group) {
     let labWork = {};
+
     labWork.title = req.body.title,
     labWork.description = req.body.description;
     labWork.submissionStartDate = date.parse(req.body.submissionStartDate, 'D/M/YYYY', true);;
@@ -80,23 +86,34 @@ function initlabWorkFromRequest(req, group) {
     return labWork;
 }
 router.post('/', (req, res, next) => {
-    let groupSlug = req.params.slug;
-    let labWorkSlug = req.params.labWorkSlug;    
-    Group.findBySlug(groupSlug, (err, group) => {
-        if(checkRequest(err, group, res)) { return; }
-        let labWork = new LabWork(initlabWorkFromRequest(req, group));
-        labWork.save((err) => {
-            if(!err) {
-                res.json({ error: false });
-            }
-            else {
-                res.json({ error: true, msg: [err] });
-            }
-        });
+    User.hasPermission(req.user, 'manage-lab-works', (err, status) => {
+        if(status) {
+            let groupSlug = req.params.slug;
+            let labWorkSlug = req.params.labWorkSlug;  
+
+            Group.findBySlug(groupSlug, (err, group) => {
+                if(checkRequest(err, group, res)) { return; }
+                let labWork = new LabWork(initlabWorkFromRequest(req, group));
+
+                labWork.save((err) => {
+                    if(!err) {
+                        res.json({ error: false });
+                    }
+                    else {
+                        res.json({ error: true, msg: [err] });
+                    }
+                });
+            });
+        }
+        else {
+            // Forbidden access
+            res.send(403);
+        }
     });
 });
 router.put('/:labWorkSlug', (req, res, next) => {
-    let labWorkSlug = req.params.labWorkSlug;        
+    let labWorkSlug = req.params.labWorkSlug;      
+
     LabWork.findBySlug(labWorkSlug, (err, labWork) => {
         if(checkRequest(err, labWork, res)) { return; }   
         if(labWork.userId == req.user.id) {
@@ -116,7 +133,8 @@ router.put('/:labWorkSlug', (req, res, next) => {
     });
 });
 router.delete('/:labWorkSlug', (req, res) => {
-    let labWorkSlug = req.params.labWorkSlug;        
+    let labWorkSlug = req.params.labWorkSlug;  
+          
     LabWork.findBySlug(labWorkSlug, (err, labWork) => {
         if(checkRequest(err, labWork, res)) { return; }   
         if(labWork.userId == req.user.id) {

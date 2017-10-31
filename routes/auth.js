@@ -16,13 +16,19 @@ router.post('/login', (req, res, next) => {
                 User.comparePassword(password, user.password, (err, isMatch) => {
                     if(!err){
                         if(isMatch){
-                            res.json({ 'error': false, 'user': {
-                                'id': user.id,
-                                'username': user.username,
-                                'email': user.email,
-                                'firstName': user.firstName,
-                                'lastName': user.lastName
-                            }, 'token': jwt.sign({ 'userId': user.id }, config.application.secret, { expiresIn: '1h' })});                       
+                            // Convert mongoose model to pojo
+                            user = user.toJSON(); 
+                            // Get permissions that this user has
+                            User.getPermissions(user, (err, permissions) => {
+                                res.json({ 'error': false, 'user': {
+                                    id: user._id,
+                                    username: user.username,
+                                    email: user.email,
+                                    firstName: user.firstName,
+                                    lastName: user.lastName,
+                                    permissions: permissions
+                                }, token: jwt.sign({ userId: user._id }, config.application.secret, { expiresIn: '1h' })});
+                            });   
                         }
                         else{
                             res.json({ 'error': true, 'msg': [ 'Your password is incorrect!' ] });

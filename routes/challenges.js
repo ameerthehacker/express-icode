@@ -3,6 +3,7 @@ const Challenge = require('../models/challenge');
 const router = express.Router();
 const submissions = require('./submissions');
 const checkRequest = require('./checkRequest');
+const User = require('../models/user');
 
 router.get('/', (req, res, next) => {
     Challenge.getAllChallenges((err, challenges) => {
@@ -31,18 +32,28 @@ function initChallengeFromRequest(req) {
     return challenge;
 }
 router.post('/', (req, res, next) => {
-    newChallenge = new Challenge(initChallengeFromRequest(req));
-    newChallenge.save((err) => {
-        if(!err){
-            res.json({ error: false });
+    User.hasPermission(req.user, 'manage-challenges', (err, status) => {
+        if(status) {
+            newChallenge = new Challenge(initChallengeFromRequest(req));
+
+            newChallenge.save((err) => {
+                if(!err){
+                    res.json({ error: false });
+                }
+                else{
+                    res.json({ error: true, msg: [err] });            
+                }
+            });
         }
-        else{
-            res.json({ error: true, msg: [err] });            
+        else {
+            // Forbidden access
+            res.send(403);
         }
     });
 });
 router.get('/:slug', (req, res, next) => {
     let slug = req.params.slug;
+
     Challenge.findBySlug(slug, (err, challenge) => {
         if(checkRequest(err, challenge, res)) { return; }
         res.json({ error: false, msg: challenge });        
@@ -51,6 +62,7 @@ router.get('/:slug', (req, res, next) => {
 router.put('/:slug', (req, res, next) => {
     let slug = req.params.slug;
     let challenge = initChallengeFromRequest(req);
+
     Challenge.update({ slug: slug }, challenge, (err) => {
         if(!err){
             res.json({ error: false });
@@ -62,6 +74,7 @@ router.put('/:slug', (req, res, next) => {
 });
 router.delete('/:slug', (req, res, next) => {
     let slug = req.params.slug;
+    
     Challenge.findBySlug(slug, (err, challenge) => {
         if(checkRequest(err, challenge, res)) { return; }
         if(challenge.userId == req.user.id) {

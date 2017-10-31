@@ -5,9 +5,11 @@ const Challenge = require('../models/challenge');
 const Assignment = require('../models/assignment');
 const checkRequest = require('./checkRequest');
 const date = require('date-and-time');
+const User = require('../models/user');
 
 router.get('/', (req, res, next) => {
     let groupSlug = req.params.slug;
+
     Group.findBySlug(groupSlug, (err, group) => {
         if(checkRequest(err, group, res)) { return; }
         Assignment.find({ groupId: group.id }, (err, assignments) => {
@@ -16,7 +18,8 @@ router.get('/', (req, res, next) => {
                     res.json({ err: false, msg: [] });
                 }
                 let processedAssignments = 0;
-                let assignmentDetails = [];                
+                let assignmentDetails = [];    
+
                 assignments.forEach(function(assignment) {
                     // Covert mongoose model into pojo                
                     let assignmentDetail = assignment.toJSON();
@@ -38,6 +41,7 @@ router.get('/', (req, res, next) => {
 router.get('/:assignmentSlug', (req, res, next) => {
     let groupSlug = req.params.slug;
     let assignmentSlug = req.params.assignmentSlug;
+
     Group.findBySlug(groupSlug, (err, group) => {
         if(checkRequest(err, group, res)) { return; }
         Assignment.findBySlug(assignmentSlug, (err, assignment) => {
@@ -54,6 +58,7 @@ router.get('/:assignmentSlug', (req, res, next) => {
 router.get('/:assignmentSlug/challenges', (req, res, next) => {
     let groupSlug = req.params.slug;
     let assignmentSlug = req.params.assignmentSlug;
+
     Group.findBySlug(groupSlug, (err, group) => {
         if(checkRequest(err, group, res)) { return; }
         Assignment.findBySlug(assignmentSlug, (err, assignment) => {
@@ -67,6 +72,7 @@ router.get('/:assignmentSlug/challenges', (req, res, next) => {
 });
 function initassignmentFromRequest(req, group) {
     let assignment = {};
+
     assignment.title = req.body.title,
     assignment.description = req.body.description;
     assignment.submissionStartDate = date.parse(req.body.submissionStartDate, 'D/M/YYYY', true);;
@@ -80,28 +86,40 @@ function initassignmentFromRequest(req, group) {
     return assignment;
 }
 router.post('/', (req, res, next) => {
-    let groupSlug = req.params.slug;
-    let assignmentSlug = req.params.assignmentSlug;    
-    Group.findBySlug(groupSlug, (err, group) => {
-        if(checkRequest(err, group, res)) { return; }
-        let assignment = new Assignment(initassignmentFromRequest(req, group));
-        assignment.save((err) => {
-            if(!err) {
-                res.json({ error: false });
-            }
-            else {
-                res.json({ error: true, msg: [err] });
-            }
-        });
+    User.hasPermission(req.user, 'manage-assignments', (err, status) => {
+        if(status) {
+            let groupSlug = req.params.slug;
+            let assignmentSlug = req.params.assignmentSlug;  
+        
+            Group.findBySlug(groupSlug, (err, group) => {
+                if(checkRequest(err, group, res)) { return; }
+                let assignment = new Assignment(initassignmentFromRequest(req, group));
+                
+                assignment.save((err) => {
+                    if(!err) {
+                        res.json({ error: false });
+                    }
+                    else {
+                        res.json({ error: true, msg: [err] });
+                    }
+                });
+            });
+        }
+        else {
+            // Forbidden access
+            res.send(403);
+        }
     });
 });
 router.put('/:assignmentSlug', (req, res, next) => {
-    let assignmentSlug = req.params.assignmentSlug;        
+    let assignmentSlug = req.params.assignmentSlug;     
+
     Assignment.findBySlug(assignmentSlug, (err, assignment) => {
         if(checkRequest(err, assignment, res)) { return; }   
         if(assignment.userId == req.user.id) {
-            let updatedassignment = initassignmentFromRequest(req);
-            Assignment.update({ slug: assignmentSlug }, updatedassignment, (err) => {
+            let updatedAssignment = initassignmentFromRequest(req);
+
+            Assignment.update({ slug: assignmentSlug }, updatedAssignment, (err) => {
                 if(!err) {
                     res.json({ error: false });
                 }
@@ -116,7 +134,8 @@ router.put('/:assignmentSlug', (req, res, next) => {
     });
 });
 router.delete('/:assignmentSlug', (req, res) => {
-    let assignmentSlug = req.params.assignmentSlug;        
+    let assignmentSlug = req.params.assignmentSlug; 
+
     Assignment.findBySlug(assignmentSlug, (err, assignment) => {
         if(checkRequest(err, assignment, res)) { return; }   
         if(assignment.userId == req.user.id) {

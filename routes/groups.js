@@ -5,6 +5,7 @@ const checkRequest = require('./checkRequest');
 const contests = require('./contests');
 const assignments = require('./assignments');
 const labWorks = require('./lab-works');
+const User = require('../models/user');
 
 router.get('/', (req, res, next) => {
     Group.getAllGroups((err, groups) => {
@@ -22,22 +23,32 @@ router.get('/:slug', (req, res, next) => {
 });
 function initGroupFromRequest(req) {
     let group = {};
+
     group.name = req.body.name;
     group.description = req.body.description;
     group.userId = req.user.id;
     return group;
 }
 router.post('/', (req, res, next) => {
-    let newGroup = new Group(initGroupFromRequest(req));
+    User.hasPermission(req.user, 'manage-groups', (err, status) => {
+        if(status) {
+            let newGroup = new Group(initGroupFromRequest(req));
     
-    newGroup.save((err) => {
-        if(!err) {
-            res.send({ error: false });
+            newGroup.save((err) => {
+                if(!err) {
+                    res.send({ error: false });
+                }
+                else {
+                    res.send({ error: true, msg: [err] });
+                }
+            });
         }
         else {
-            res.send({ error: true, msg: [err] });
+            // Forbidden access
+            res.send(403);
         }
     });
+    
 });
 router.put('/:slug', (req, res, next) => {
     const groupSlug = req.params.slug;
