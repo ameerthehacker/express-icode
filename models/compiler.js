@@ -54,6 +54,7 @@ Compiler.getCompileCmd = (compiler, filename, errorFilename, inputFilename = fal
     let compileCmd = compiler.compile;
     compileCmd = compileCmd.replace(":source", Compiler.getFullFilename(compiler, filename));
     compileCmd = compileCmd.replace(":destination", path.join("home", path.basename(filename)));
+    compileCmd = compileCmd.replace(":destdir", "home");
     compileCmd = compileCmd.replace(":error", errorFilename);
     if(inputFilename) {
         compileCmd = compileCmd.replace(":input", inputFilename);
@@ -66,6 +67,7 @@ Compiler.getCompileCmd = (compiler, filename, errorFilename, inputFilename = fal
 Compiler.getRunCmd = (compiler, filename, inputFilename, outputFileName) => {
     let runCmd = compiler.run;
     runCmd = runCmd.replace(":source", path.join("home", path.basename(filename)));
+    runCmd = runCmd.replace(":destdir", "home");    
     runCmd = runCmd.replace(":output", outputFileName);
     runCmd = runCmd.replace(":input", inputFilename)
     return runCmd;
