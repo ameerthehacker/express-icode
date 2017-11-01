@@ -4,7 +4,6 @@
         "code" : "2", 
         "image" : "python", 
         "compile" : "python :source  < :input > :output 2> :error", 
-        "run" : "", 
         "extension" : "py", 
         "mode" : "text/x-python", 
         "boilerplate" : "print('Hello World!')",
@@ -37,10 +36,31 @@
         "code" : "4", 
         "image" : "php", 
         "compile" : "php  :source  < :input > :output 2> :error", 
-        "run" : "", 
         "extension" : "php", 
         "mode" : "text/x-php", 
         "boilerplate" : "<?php \n\tfprintf(STDOUT, \"Hello World!\");\n?>", 
+        "timeout" : 10
+    },
+    { 
+        "language" : "Java", 
+        "code" : "6", 
+        "image" : "openjdk", 
+        "compile" : "javac :source  < :input > :output 2> :error -d :destdir ",
+        "run" : "cd :destdir;java `ls *.class | egrep \"^[[:alnum:]]+\" -o` < :input > :output ", 
+        "extension" : "java", 
+        "mode" : "text/x-java", 
+        "boilerplate" : "class Solution {\n  public static void main(String [] args) {\n    System.out.println(\"Hello World!\");\n  }\n}", 
+        "timeout" : 5
+    },
+    { 
+        "_id" : "59f9d625c3d8743a12ddf2f9",
+        "language" : "Ruby", 
+        "code" : "7", 
+        "image" : "ruby", 
+        "compile" : "ruby :source  < :input > :output 2> :error", 
+        "extension" : "rb", 
+        "mode" : "text/x-ruby", 
+        "boilerplate" : "puts 'Hello World!'", 
         "timeout" : 10
     }
 ]
