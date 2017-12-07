@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const URLSlugs = require('mongoose-url-slugs');
+const pagination = require('mongoose-paginate');
+const config = require('../config/env');
 const Schema = mongoose.SchemaTypes;
 
 const TestCaseSchema = new mongoose.Schema({
@@ -59,11 +61,12 @@ const ChallengeSchema = mongoose.Schema({
 });
 
 ChallengeSchema.plugin(URLSlugs('title'));
+ChallengeSchema.plugin(pagination);
 
 const Challenge = mongoose.model('Challenge', ChallengeSchema);
 
-Challenge.getAllChallenges = (callback) => {
-    Challenge.find(callback);
+Challenge.getAllChallenges = (page, callback) => {
+    Challenge.paginate({}, { limit: config.pagintation.perPage, page: page }, callback);
 };
 
 module.exports = Challenge;

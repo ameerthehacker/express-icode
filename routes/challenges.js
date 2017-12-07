@@ -6,7 +6,8 @@ const checkRequest = require('./checkRequest');
 const User = require('../models/user');
 
 router.get('/', (req, res, next) => {
-    Challenge.getAllChallenges((err, challenges) => {
+    let page = req.query.page ? req.query.page: 1;
+    Challenge.getAllChallenges(page, (err, challenges) => {
         if(!err) {
             res.json({ error: false, msg: challenges });
         }

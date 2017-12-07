@@ -7,6 +7,9 @@ config = {
     application: {
         secret: 'secret',
         env: 'development'
+    },
+    pagintation: {
+        perPage: 5
     }
 }
 
