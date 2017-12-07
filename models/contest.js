@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const URLSlugs = require('mongoose-url-slugs');
 const Schema = mongoose.SchemaTypes;
+const pagination = require('mongoose-paginate');
 
 const ContestSchema = mongoose.Schema({
     title: {
@@ -42,6 +43,7 @@ const ContestSchema = mongoose.Schema({
 });
 
 ContestSchema.plugin(URLSlugs('title'));
+ContestSchema.plugin(pagination);
 
 const Contest = mongoose.model('Contest', ContestSchema);
 

@@ -7,22 +7,27 @@ const ContestRegistration = require('../models/contest-registration');
 const checkRequest = require('./checkRequest');
 const date = require('date-and-time');
 const User = require('../models/user');
+const config = require('../config/env');
 
 router.get('/', (req, res, next) => {
     let groupSlug = req.params.slug;
+    let page = req.query.page ? req.query.page: 1;
 
     Group.findBySlug(groupSlug, (err, group) => {
         if(checkRequest(err, group, res)) { return; }
-        let contestDetails = [];
+        let contestDetails = { docs: [] };
 
-        Contest.find({ groupId: group.id }, (err, contests) => {
+        Contest.paginate({ groupId: group.id }, { page: page, limit: config.pagination.perPage }, (err, contests) => {
             if(!err) {
-                if(contests.length == 0) {
+                if(contests.docs.length == 0) {
                     res.json({ err: false, msg: [] });
                 }
                 let processedContests = 0;
+                contestDetails.page = contests.page;                
+                contestDetails.limit = contests.limit;
+                contestDetails.total = contests.total;
 
-                contests.forEach(function(contest) {
+                contests.docs.forEach(function(contest) {
                     // Covert mongoose model into pojo                
                     let contestDetail = contest.toJSON();
                     // Add fields for contest is open and whether user can participating
@@ -35,9 +40,9 @@ router.get('/', (req, res, next) => {
                         else {
                             contestDetail.userRegistered = false;
                         }
-                        contestDetails.push(contestDetail);
+                        contestDetails.docs.push(contestDetail);
                         processedContests++;
-                        if(processedContests == contests.length) {
+                        if(processedContests == contests.docs.length) {
                             res.json({ error: false, msg: contestDetails });
                         }
                     });
