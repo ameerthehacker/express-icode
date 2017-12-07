@@ -66,7 +66,7 @@ ChallengeSchema.plugin(pagination);
 const Challenge = mongoose.model('Challenge', ChallengeSchema);
 
 Challenge.getAllChallenges = (page, callback) => {
-    Challenge.paginate({}, { limit: config.pagintation.perPage, page: page }, callback);
+    Challenge.paginate({}, { limit: config.pagination.perPage, page: page }, callback);
 };
 
 module.exports = Challenge;

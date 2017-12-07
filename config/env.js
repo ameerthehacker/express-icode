@@ -8,8 +8,8 @@ config = {
         secret: 'secret',
         env: 'development'
     },
-    pagintation: {
-        perPage: 10
+    pagination: {
+        perPage: 5
     }
 }
 

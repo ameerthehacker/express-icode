@@ -8,7 +8,9 @@ const labWorks = require('./lab-works');
 const User = require('../models/user');
 
 router.get('/', (req, res, next) => {
-    Group.getAllGroups((err, groups) => {
+    let page = req.query.page ? req.query.page: 1;
+    
+    Group.getAllGroups(page, (err, groups) => {
         if(checkRequest(err, groups, res)) { return; }
         res.send({ error: false, msg: groups });
     });

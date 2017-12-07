@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const URLSlugs = require('mongoose-url-slugs');
 const Schema = mongoose.SchemaTypes;
+const pagination = require('mongoose-paginate');
+const config = require('../config/env');
 
 const GroupSchema = mongoose.Schema({
     name: {
@@ -18,11 +20,12 @@ const GroupSchema = mongoose.Schema({
 });
 
 GroupSchema.plugin(URLSlugs('name'));
+GroupSchema.plugin(pagination);
 
 const Group = mongoose.model('Group', GroupSchema);
 
-Group.getAllGroups = (callback) => {
-    Group.find((err, groups) => {
+Group.getAllGroups = (page, callback) => {
+    Group.paginate({}, { page: page, limit: config.pagination.perPage }, (err, groups) => {
         callback(err, groups);
     });
 }
