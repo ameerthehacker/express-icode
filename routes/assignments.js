@@ -6,28 +6,34 @@ const Assignment = require('../models/assignment');
 const checkRequest = require('./checkRequest');
 const date = require('date-and-time');
 const User = require('../models/user');
+const config = require('../config/env');
 
 router.get('/', (req, res, next) => {
     let groupSlug = req.params.slug;
+    let page = req.query.page ? req.query.page: 1;
 
     Group.findBySlug(groupSlug, (err, group) => {
         if(checkRequest(err, group, res)) { return; }
-        Assignment.find({ groupId: group.id }, (err, assignments) => {
+        let assignmentDetails = { docs: [] };    
+        
+        Assignment.paginate({ groupId: group.id }, { page: page, limit: config.pagination.perPage }, (err, assignments) => {
             if(!err) {
                 if(assignments.length == 0) {
                     res.json({ err: false, msg: [] });
                 }
                 let processedAssignments = 0;
-                let assignmentDetails = [];    
+                assignmentDetails.page = assignments.page;                
+                assignmentDetails.limit = assignments.limit;
+                assignmentDetails.total = assignments.total;
 
-                assignments.forEach(function(assignment) {
+                assignments.docs.forEach(function(assignment) {
                     // Covert mongoose model into pojo                
                     let assignmentDetail = assignment.toJSON();
                     // Add fields for assignment is open
                     assignmentDetail.isRunning = Assignment.isRunning(assignment);
-                    assignmentDetails.push(assignmentDetail);
+                    assignmentDetails.docs.push(assignmentDetail);
                     processedAssignments++;
-                    if(processedAssignments == assignments.length) {
+                    if(processedAssignments == assignments.docs.length) {
                         res.json({ error: false, msg: assignmentDetails });
                     }
                 });

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const URLSlugs = require('mongoose-url-slugs');
 const Schema = mongoose.SchemaTypes;
+const pagination = require('mongoose-paginate');
 
 const AssignmentSchema = mongoose.Schema({
     title: {
@@ -34,6 +35,7 @@ const AssignmentSchema = mongoose.Schema({
 });
 
 AssignmentSchema.plugin(URLSlugs('title'));
+AssignmentSchema.plugin(pagination);
 
 const Assignment = mongoose.model('Assignment', AssignmentSchema);
 
