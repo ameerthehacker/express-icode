@@ -6,28 +6,34 @@ const LabWork = require('../models/lab-work');
 const checkRequest = require('./checkRequest');
 const date = require('date-and-time');
 const User = require('../models/user');
+const config = require('../config/env');
+
 
 router.get('/', (req, res, next) => {
     let groupSlug = req.params.slug;
+    let page = req.query.page ? req.query.page: 1;
 
     Group.findBySlug(groupSlug, (err, group) => {
         if(checkRequest(err, group, res)) { return; }
-        LabWork.find({ groupId: group.id }, (err, labWorks) => {
+        let labWorkDetails = { docs: [] };         
+        LabWork.paginate({ groupId: group.id }, { page: page, limit: config.pagination.perPage },  (err, labWorks) => {
             if(!err) {
                 if(labWorks.length == 0) {
                     res.json({ err: false, msg: [] });
                 }
                 let processedLabWorks = 0;
-                let labWorkDetails = [];   
+                labWorkDetails.page = labWorks.page;                
+                labWorkDetails.limit = labWorks.limit;
+                labWorkDetails.total = labWorks.total;  
 
-                labWorks.forEach(function(labWork) {
+                labWorks.docs.forEach(function(labWork) {
                     // Covert mongoose model into pojo                
                     let labWorkDetail = labWork.toJSON();
                     // Add fields for labWork is open
                     labWorkDetail.isRunning = LabWork.isRunning(labWork);
-                    labWorkDetails.push(labWorkDetail);
+                    labWorkDetails.docs.push(labWorkDetail);
                     processedLabWorks++;
-                    if(processedLabWorks == labWorks.length) {
+                    if(processedLabWorks == labWorks.docs.length) {
                         res.json({ error: false, msg: labWorkDetails });
                     }
                 });

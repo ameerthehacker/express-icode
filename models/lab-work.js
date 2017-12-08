@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const URLSlugs = require('mongoose-url-slugs');
 const Schema = mongoose.SchemaTypes;
+const pagination = require('mongoose-paginate');
 
 const LabWorkSchema = mongoose.Schema({
     title: {
@@ -34,6 +35,7 @@ const LabWorkSchema = mongoose.Schema({
 });
 
 LabWorkSchema.plugin(URLSlugs('title'));
+LabWorkSchema.plugin(pagination);
 
 const LabWork = mongoose.model('LabWork', LabWorkSchema);
 
