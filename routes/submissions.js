@@ -67,6 +67,8 @@ router.post('/', (req, res, next) => {
     const typeOfSubmission = req.body.typeOfSubmission;
     const submittedForId = req.body.submittedForId;
     const uid = req.body.uid;
+    const hasCustomInput = req.body.hasCustomInput;
+    const customInput = req.body.customInput;
 
     Compiler.findByCode(langCode, (err, compiler) => {
         if(!err && compiler) {
@@ -80,6 +82,15 @@ router.post('/', (req, res, next) => {
                     submittedForId: submittedForId
                 };
                 let pointsPerTestCase = 100.0 / challenge.testCases.length;
+                // Check if it is a custom Input
+                if (hasCustomInput) {
+                    Compiler.compile(compiler, code, customInput, (result) => {
+                        result.input = customInput;
+                        socketio.emit(uid, { 'type': 'customInput', result:  result }); 
+                        res.json(result);                    
+                    });
+                    return;
+                }
                 // Test Sample test case
                 Compiler.compile(compiler, code, challenge.sampleInput, (result) => {
                     if(result.compiled) {
