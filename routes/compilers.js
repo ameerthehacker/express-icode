@@ -17,13 +17,13 @@ router.get('/', (req, res, next) => {
     });
 });
 router.post('/:langCode', (req, res, next) => {    
-    // Create directory if not exists
-    if(!fs.existsSync(userDir)) {
-        fs.mkdirSync(userDir);
-    }
+    const code = req.body.code;
+    const langCode = req.params.langCode;
+    const input = req.body.input;
+
     Compiler.findByCode(langCode, (err, compiler) => {
         if(!err && compiler) {
-            Compiler.compile(compiler, code, testCase.input, (result) => {
+            Compiler.compile(compiler, code, input, (result) => {
                 res.json(result);
             });
         }
