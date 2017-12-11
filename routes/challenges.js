@@ -29,6 +29,7 @@ function initChallengeFromRequest(req) {
     challenge.sampleOutput = req.body.sampleOutput;    
     challenge.explanation = req.body.explanation;
     challenge.testCases = req.body.testCases;
+    challenge.boilerplates = req.body.boilerplates;    
     challenge.userId = req.user.id;
     
     return challenge;

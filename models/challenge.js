@@ -15,6 +15,16 @@ const TestCaseSchema = new mongoose.Schema({
     }
 });
 
+const BoilerplateSchema = new mongoose.Schema({
+    code: {
+        type: String,
+        required: true
+    },
+    boilerplate: {
+        type: String,
+        required: true
+    }
+});
 
 const ChallengeSchema = mongoose.Schema({
     title: {
@@ -53,6 +63,10 @@ const ChallengeSchema = mongoose.Schema({
         type: Array,
         Schema: TestCaseSchema,
         required: true
+    },
+    boilerplates: {
+        type: Array,
+        Schema: BoilerplateSchema
     },
     userId: {
         type: Schema.ObjectId,
