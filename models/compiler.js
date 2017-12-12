@@ -93,7 +93,7 @@ Compiler.compile = (compiler, code, input, callback, uid = 0) => {
     let inputFilename = uniqid("input-") + ".run";
     let outputFilename = uniqid("output-") + ".run";
     // Set the maximum allowed memory for the container in bytes which is set to 20MB
-    let memoryLimit = 20 * 1024 * 1024;
+    let memoryLimit = 50 * 1024 * 1024;
     let containerStartTime;
     fs.writeFileSync(path.join(compileDirectory, inputFilename), input);
     fs.writeFileSync(codeFilename, code);
