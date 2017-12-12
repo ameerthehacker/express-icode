@@ -92,6 +92,8 @@ Compiler.compile = (compiler, code, input, callback, uid = 0) => {
     let errorFilename = uniqid("error-") +  ".compile";
     let inputFilename = uniqid("input-") + ".run";
     let outputFilename = uniqid("output-") + ".run";
+    // Set the maximum allowed memory for the container in bytes which is set to 20MB
+    let memoryLimit = 20 * 1024 * 1024;
     let containerStartTime;
     fs.writeFileSync(path.join(compileDirectory, inputFilename), input);
     fs.writeFileSync(codeFilename, code);
@@ -108,7 +110,7 @@ Compiler.compile = (compiler, code, input, callback, uid = 0) => {
         containerCmd = compileCmd + ";" + runCmd;
     }
     // Start the container to compile and run the code safely
-    docker.run(compiler.image, ['sh', '-c', containerCmd], process.stdout, { Volumes: { '/volume': {} }, 'Binds': [ compileDirectory + ':/volume:rw' ] }, (err, data) => {
+    docker.run(compiler.image, ['sh', '-c', containerCmd], process.stdout, { Volumes: { '/volume': {} }, HostConfig: { 'Binds': [ compileDirectory + ':/volume:rw' ], Memory: memoryLimit } }, (err, data) => {
     })
     .on('start', (container) => {
         containerStartTime = Date.now();
