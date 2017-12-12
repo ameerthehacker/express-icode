@@ -25,9 +25,7 @@ function initChallengeFromRequest(req) {
     challenge.inputFormat = req.body.inputFormat;
     challenge.outputFormat = req.body.outputFormat;
     challenge.constraints = req.body.constraints;    
-    challenge.sampleInput = req.body.sampleInput;        
-    challenge.sampleOutput = req.body.sampleOutput;    
-    challenge.explanation = req.body.explanation;
+    challenge.sampleTestCases = req.body.sampleTestCases;    
     challenge.testCases = req.body.testCases;
     challenge.boilerplates = req.body.boilerplates;    
     challenge.userId = req.user.id;

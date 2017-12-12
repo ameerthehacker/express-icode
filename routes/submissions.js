@@ -17,7 +17,9 @@ function saveSubmission(submission, code, points, callback) {
             updatedSubmission.points = points;
             updatedSubmission.timeOfSubmission = Date.now();
             Submission.update(submission, updatedSubmission, (err) => {
-                callback(err);
+                if(callback) {
+                    callback(err);                
+                }
             });
         }
         else {
@@ -25,7 +27,9 @@ function saveSubmission(submission, code, points, callback) {
             submission.points = points;                       
             let newSubmission = new Submission(submission);
             newSubmission.save((err) => {
-                callback(err);
+                if(callback) {
+                    callback(err);                
+                }
             });
         }
     });
@@ -87,30 +91,64 @@ router.post('/', (req, res, next) => {
                     Compiler.compile(compiler, code, customInput, (result) => {
                         result.input = customInput;
                         socketio.emit(uid, { 'type': 'customInput', result:  result }); 
+                        saveSubmission(submission, code, points);
                         res.json(result);                    
                     });
                     return;
                 }
-                // Test Sample test case
-                Compiler.compile(compiler, code, challenge.sampleInput, (result) => {
-                    if(result.compiled) {
-                        if(result.msg == challenge.sampleOutput) {
-                            result.sampleTestCasePassed = true;
+                // Test Sample test cases
+                let sampleInputs = [];
+                challenge.sampleTestCases.forEach((testCase) => {
+                    sampleInputs.push(testCase.input);
+                });
+                Compiler.compileMany(compiler, code, sampleInputs, (results) => {
+                    let sampleTestCasesResult = { error: false, msg: [] };
+                    for(let i = 0; i < results.length; i++) {
+                        sampleTestCasesResult.compiled = results[i].compiled;
+                        
+                        if(results[i].compiled) {
+                            results[i].input = challenge.sampleTestCases[i].input;
+                            results[i].expectedOutput = challenge.sampleTestCases[i].output; 
+                            sampleTestCasesResult.msg[i] = results[i];
+                            if(results[i].msg == challenge.sampleTestCases[i].output) {
+                                sampleTestCasesResult.msg[i].passed = true;
+                            }
+                            else {
+                                sampleTestCasesResult.msg[i].passed = false;
+                            }
+                        }
+                        else{                       
+                            // Save the submission
+                            sampleTestCasesResult.error = true;
+                            sampleTestCasesResult.msg = results[i].msg;
+                            saveSubmission(submission, code, points);
+                            break;
+                        }
+                    }
+                    if(!sampleTestCasesResult.error) {
+                        let allSampleTestCasePassed = true;
+                        for(let i = 0; i < sampleTestCasesResult.msg.length; i++) {
+                            if(!sampleTestCasesResult.msg[i].passed) {
+                                allSampleTestCasePassed = false;
+                            }
+                        }
+                        
+                        if(allSampleTestCasePassed) {
+                            sampleTestCasesResult.passed = true;
+                            socketio.emit(uid, { type: 'sampleTestCase', result: sampleTestCasesResult });           
                             // Compile all the test cases and test
                             let testCases = [];
+                            let result = { error: false, compiled: true };
                             result.testCaseResults = [];
                             for(let i = 0 ; i < challenge.testCases.length ; i++) {
                                 testCases.push(challenge.testCases[i].input);
-                            }   
-                            // Send the sample testcase success result to socket
-                            socketio.emit(uid, { 'type': 'sampleTestCase', result:  result });                    
+                            }                 
                             Compiler.compileMany(compiler, code, testCases, (outputs) => {
                                 for(let i = 0 ; i < challenge.testCases.length ; i++) {
                                     let testCaseResult = {
                                         input: challenge.testCases[i].input,
                                         output: outputs[i].msg,
                                         timeout: outputs[i].timeout,
-                                        expectedOutput: challenge.testCases[i].output,
                                         timeTaken: outputs[i].timeTaken  
                                     }
                                     if(challenge.testCases[i].output == outputs[i].msg) {
@@ -123,17 +161,9 @@ router.post('/', (req, res, next) => {
                                     }
                                     result.testCaseResults.push(testCaseResult);
                                 } 
+                                res.json(result); 
                                 // Save the submission
-                                saveSubmission(submission, code, points, (err) => {
-                                    if(err) {
-                                        result.submissionSaved = false;
-                                    }
-                                    else {
-                                        result.submissionSaved = true;
-                                    }
-                                    result.points = points;
-                                    res.json(result);             
-                                });
+                                saveSubmission(submission, code, points);
                             }, (result) => {
                                 if(challenge.testCases[result.index].output == result.output.msg) {
                                     result.output.testCasePassed = true;
@@ -142,40 +172,19 @@ router.post('/', (req, res, next) => {
                                     result.output.testCasePassed = false;
                                 }
                                 socketio.emit(uid, { type: 'testCase', index: result.index, result: result.output });
-                            });
+                            });       
                         }
                         else {
-                            result.sampleTestCasePassed = false;
-                            // Send the sample testcase failure result to socket
-                            socketio.emit(uid, { 'type': 'sampleTestCase', result:  result });   
+                            sampleTestCasesResult.passed = false;
+                            socketio.emit(uid, { type: 'sampleTestCase', result: sampleTestCasesResult });
                             // Save the submission
-                            saveSubmission(submission, code, points, (err) => {
-                                if(err) {
-                                    result.submissionSaved = false;
-                                }
-                                else {
-                                    result.submissionSaved = true;
-                                }
-                                result.points = points;                         
-                                res.json(result);             
-                            });
+                            saveSubmission(submission, code, points);        
+                            res.json(sampleTestCasesResult);
                         }
                     }
-                    else{
-                        socketio.emit(uid, { 'type': 'sampleTestCase', result:  result });                               
-                        // Save the submission
-                        saveSubmission(submission, code, points, (err) => {
-                            if(err) {
-                                result.submissionSaved = false;
-                            }
-                            else {
-                                result.submissionSaved = true;
-                            }
-                            result.points = points;                            
-                            res.json(result);             
-                        });
+                    else {
+                        res.json(sampleTestCasesResult);                    
                     }
-                    
                 });
             });
         }

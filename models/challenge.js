@@ -4,6 +4,21 @@ const pagination = require('mongoose-paginate');
 const config = require('../config/env');
 const Schema = mongoose.SchemaTypes;
 
+const SampleTestCaseSchema = new mongoose.Schema({
+    input: {
+        type: String,
+        required: true
+    },
+    output: {
+        type: String,
+        required: true
+    },
+    explanation: {
+        type: String,
+        required: true
+    }
+});
+
 const TestCaseSchema = new mongoose.Schema({
     input: {
         type: String,
@@ -47,16 +62,9 @@ const ChallengeSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    sampleInput: {
-        type: String,
-        required: true
-    },
-    sampleOutput: {
-        type: String,
-        required: true
-    },
-    explanation: {
-        type: String,
+    sampleTestCases: {
+        type: Array,
+        Schema: SampleTestCaseSchema,
         required: true
     },
     testCases: {
