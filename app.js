@@ -55,8 +55,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.use('/', index);
-app.use('/users', users);
 app.use('/auth', auth);
+app.use('/users', passport.authenticate('jwt', { session: false }), users);
 app.use('/challenges', passport.authenticate('jwt', { session: false }), challenges);
 app.use('/compilers', passport.authenticate('jwt', { session: false }), compilers)
 app.use('/groups', passport.authenticate('jwt', { session: false }), groups);
