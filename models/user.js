@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const Schema = mongoose.SchemaTypes;
 const bcrytjs = require('bcryptjs');
 const Role = require('./role');
+const pagination = require('mongoose-paginate');
+const config = require('../config/env');
 
 const UserSchema = new mongoose.Schema({
     username: {
@@ -37,8 +39,13 @@ const UserSchema = new mongoose.Schema({
     }
 });
 
+UserSchema.plugin(pagination);
+
 const User = mongoose.model('User', UserSchema);
 
+User.getAllUsers = (page, callback) => {
+    User.paginate({}, { limit: config.pagination.perPage, page: page }, callback);
+}
 User.findByUserId = (id, callback) => {
     User.findById(id, callback);
 }
