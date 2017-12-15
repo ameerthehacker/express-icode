@@ -30,7 +30,7 @@ const SubmissionSchema = mongoose.Schema({
         required: true
     },
     submittedForId: {
-        type: String
+        type: Schema.ObjectId
     }
 });
 

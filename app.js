@@ -30,6 +30,7 @@ var auth = require('./routes/auth');
 var challenges = require('./routes/challenges');
 var compilers = require('./routes/compilers');
 var groups = require('./routes/groups');
+var leaderboards = require('./routes/leaderboards');
 
 
 var app = express();
@@ -60,6 +61,7 @@ app.use('/users', passport.authenticate('jwt', { session: false }), users);
 app.use('/challenges', passport.authenticate('jwt', { session: false }), challenges);
 app.use('/compilers', passport.authenticate('jwt', { session: false }), compilers)
 app.use('/groups', passport.authenticate('jwt', { session: false }), groups);
+app.use('/leaderboards', passport.authenticate('jwt', { session: false }), leaderboards);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

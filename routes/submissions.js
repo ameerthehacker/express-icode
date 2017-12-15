@@ -8,7 +8,7 @@ const checkRequest = require('./checkRequest');
 
 emitter.defaultMaxListeners = 100;
 
-function saveSubmission(submission, code, points, callback) {
+function saveSubmission(submission, code, points, socket, callback) {
     // Save the submission
     Submission.findOne(submission, (err, oldSubmission) => {
         if(!err && oldSubmission) {           
@@ -20,6 +20,10 @@ function saveSubmission(submission, code, points, callback) {
                 if(callback) {
                     callback(err);                
                 }
+                // Emit that there is a new submission if it is not a practice submission
+                if(submission.typeOfSubmission != 'practice') {
+                    socket.emit(submission.submittedForId, {}); 
+                }
             });
         }
         else {
@@ -29,6 +33,10 @@ function saveSubmission(submission, code, points, callback) {
             newSubmission.save((err) => {
                 if(callback) {
                     callback(err);                
+                }
+                // Emit that there is a new submission if it is not a practice submission
+                if(submission.typeOfSubmission != 'practice') {
+                    socket.emit(submission.submittedForId, {}); 
                 }
             });
         }
@@ -63,7 +71,7 @@ router.post('/', (req, res, next) => {
     // To make sure that express dont discard the current request while compiling
     res.setTimeout(100 * 1000);
     // Get the socket
-    const socketio = req.app.get('socketio');    
+    const socket = req.app.get('socketio');    
     let points = 0;
     const langCode = req.body.langCode;
     const code = req.body.code;
@@ -90,8 +98,8 @@ router.post('/', (req, res, next) => {
                 if (hasCustomInput) {
                     Compiler.compile(compiler, code, customInput, (result) => {
                         result.input = customInput;
-                        socketio.emit(uid, { 'type': 'customInput', result:  result }); 
-                        saveSubmission(submission, code, points);
+                        socket.emit(uid, { 'type': 'customInput', result:  result }); 
+                        saveSubmission(submission, code, points, socket);
                         res.json(result);                    
                     });
                     return;
@@ -121,7 +129,7 @@ router.post('/', (req, res, next) => {
                             // Save the submission
                             sampleTestCasesResult.error = true;
                             sampleTestCasesResult.msg = results[i].msg;
-                            saveSubmission(submission, code, points);
+                            saveSubmission(submission, code, points, );
                             break;
                         }
                     }
@@ -135,7 +143,7 @@ router.post('/', (req, res, next) => {
                         
                         if(allSampleTestCasePassed) {
                             sampleTestCasesResult.passed = true;
-                            socketio.emit(uid, { type: 'sampleTestCase', result: sampleTestCasesResult });           
+                            socket.emit(uid, { type: 'sampleTestCase', result: sampleTestCasesResult });           
                             // Compile all the test cases and test
                             let testCases = [];
                             let result = { error: false, compiled: true };
@@ -163,7 +171,7 @@ router.post('/', (req, res, next) => {
                                 } 
                                 res.json(result); 
                                 // Save the submission
-                                saveSubmission(submission, code, points);
+                                saveSubmission(submission, code, points, socket);
                             }, (result) => {
                                 if(challenge.testCases[result.index].output == result.output.msg) {
                                     result.output.testCasePassed = true;
@@ -171,14 +179,14 @@ router.post('/', (req, res, next) => {
                                 else {
                                     result.output.testCasePassed = false;
                                 }
-                                socketio.emit(uid, { type: 'testCase', index: result.index, result: result.output });
+                                socket.emit(uid, { type: 'testCase', index: result.index, result: result.output });
                             });       
                         }
                         else {
                             sampleTestCasesResult.passed = false;
-                            socketio.emit(uid, { type: 'sampleTestCase', result: sampleTestCasesResult });
+                            socket.emit(uid, { type: 'sampleTestCase', result: sampleTestCasesResult });
                             // Save the submission
-                            saveSubmission(submission, code, points);        
+                            saveSubmission(submission, code, points, socket);        
                             res.json(sampleTestCasesResult);
                         }
                     }
