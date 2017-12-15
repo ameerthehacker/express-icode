@@ -92,8 +92,8 @@ Compiler.compile = (compiler, code, input, callback, uid = 0) => {
     let errorFilename = uniqid("error-") +  ".compile";
     let inputFilename = uniqid("input-") + ".run";
     let outputFilename = uniqid("output-") + ".run";
-    // Set the maximum allowed memory for the container in bytes which is set to 20MB
-    let memoryLimit = 50 * 1024 * 1024;
+    // Set the maximum allowed memory for the container in bytes which is set to 512MB
+    let memoryLimit = 512 * 1024 * 1024;
     let containerStartTime;
     fs.writeFileSync(path.join(compileDirectory, inputFilename), input);
     fs.writeFileSync(codeFilename, code);
