@@ -75,14 +75,88 @@ Compiler.getRunCmd = (compiler, filename, inputFilename, outputFileName) => {
 Compiler.getFullFilename = (compiler, filename) => {
     return filename + "." + compiler.extension;
 }
-
-Compiler.compile = (compiler, code, input, callback, uid = 0) => {
+Compiler.startContainer = (compiler, callback) => {
+    // Set the maximum allowed memory for the container in bytes which is set to 512MB    
+    let memoryLimit = 512 * 1024 * 1024;    
     // Unique directory to compile program
     const compileDirectory = path.join(appRootPath.path, 'tmp', uniqid('compile-'));
     // Create directory if not exists
     if(!fs.existsSync(compileDirectory)) {
         fs.mkdirSync(compileDirectory);
     }
+    docker.run(compiler.image, [], null, { Tty: true, Volumes: { '/volume': {} }, HostConfig: { 'Binds': [ compileDirectory + ':/volume:rw' ], Memory: memoryLimit } }, (err, data) => {
+    }).on('start', (container) => {
+        callback(compileDirectory, container);
+    }).on('data', () => {
+        console.log('Container stopped!');
+    });
+}
+Compiler.compileCode = (container, compiler, compileDirectory, code, callback) => {
+    const codeFilename = path.join(compileDirectory, Compiler.getFullFilename(compiler, 'solution'));    
+    const errorFilename = uniqid("error-") +  ".compile";    
+    let compileCmd = Compiler.getCompileCmd(compiler, Compiler.getVolumeFileName('solution'),Compiler.getVolumeFileName(errorFilename));
+
+    // Write the code file to the compiler directory
+    fs.writeFileSync(codeFilename, code);
+    Compiler.execContainer(container, compileCmd, () => {
+        const errors = fs.readFileSync(path.join(compileDirectory, errorFilename)).toString();
+        if(errors.length == 0) {
+            callback({ error: false });
+        }
+        else {
+            callback({ error: true, msg: errors });
+        }
+    });
+}
+Compiler.runCode = (container, compiler, compileDirectory, input, callback) => {
+    let runCmd = "";
+    let inputFilename = uniqid("input-") + ".run";
+    let outputFilename = uniqid("output-") + ".run";
+
+    // Write the input to file
+    fs.writeFileSync(path.join(compileDirectory, inputFilename), input);    
+    if(compiler.run.length == 0) {
+        // Its a scripting language and only needs interpretation
+        runCmd = Compiler.getCompileCmd(compiler, Compiler.getVolumeFileName('solution'), Compiler.getVolumeFileName(errorFilename), Compiler.getVolumeFileName(inputFilename), Compiler.getVolumeFileName(outputFilename));
+    }
+    else {
+        runCmd = Compiler.getRunCmd(compiler, Compiler.getVolumeFileName('solution'), Compiler.getVolumeFileName(inputFilename), Compiler.getVolumeFileName(outputFilename));
+    }   
+    Compiler.execContainer(container, runCmd, () => {
+        const output = fs.readFileSync(path.join(compileDirectory, outputFilename)).toString();
+        callback({ error: false, msg: output });
+    });    
+}
+Compiler.execContainer = (container, cmd, callback) => {
+    container = docker.getContainer(container.id);
+    container.exec({ Cmd: ['sh', '-c', cmd], AttachStdin: false, AttachStdout: true, detach: false }, (err, exec) => {
+        exec.start({ hijack: true }, (err, stream) => {
+            const timer = setInterval(() => {
+                exec.inspect((err, data) => {
+                    if(!err) {
+                        if(!data.Running) {
+                            clearInterval(timer);
+                            callback(err);
+                        }
+                    }
+                    else {
+                        clearInterval(timer);
+                        callback(err);
+                    }
+                });
+                docker.modem.demuxStream(stream, process.stdout, process.stderr);                
+            }, 10);
+        });
+    });
+}
+Compiler.stopContainer = (container, callback) => {
+    container.stop()
+    .then(() => {
+        container.remove(callback);
+    });
+}
+Compiler.compile = (compiler, code, input, callback, uid = 0) => {
+    
     // Command to be executed inside the container
     let containerCmd = "";
     let codeFilename = path.join(compileDirectory, Compiler.getFullFilename(compiler, 'solution'));
@@ -92,8 +166,6 @@ Compiler.compile = (compiler, code, input, callback, uid = 0) => {
     let errorFilename = uniqid("error-") +  ".compile";
     let inputFilename = uniqid("input-") + ".run";
     let outputFilename = uniqid("output-") + ".run";
-    // Set the maximum allowed memory for the container in bytes which is set to 512MB
-    let memoryLimit = 512 * 1024 * 1024;
     let containerStartTime;
     fs.writeFileSync(path.join(compileDirectory, inputFilename), input);
     fs.writeFileSync(codeFilename, code);
