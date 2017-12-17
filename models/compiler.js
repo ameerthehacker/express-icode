@@ -108,7 +108,7 @@ Compiler.compileCode = (container, compiler, compileDirectory, code, callback) =
         }
     });
 }
-Compiler.runCode = (container, compiler, compileDirectory, input, callback) => {
+Compiler.runCode = (container, compiler, compileDirectory, input, callback, index = 0) => {
     let runCmd = "";
     let inputFilename = uniqid("input-") + ".run";
     let outputFilename = uniqid("output-") + ".run";
@@ -155,88 +155,49 @@ Compiler.stopContainer = (container, callback) => {
         container.remove(callback);
     });
 }
-Compiler.compile = (compiler, code, input, callback, uid = 0) => {
-    
-    // Command to be executed inside the container
-    let containerCmd = "";
-    let codeFilename = path.join(compileDirectory, Compiler.getFullFilename(compiler, 'solution'));
-    // Flag to avoid sending results after timeout
-    let resultSent = false;
-    // To make sure all the filenames are unique
-    let errorFilename = uniqid("error-") +  ".compile";
-    let inputFilename = uniqid("input-") + ".run";
-    let outputFilename = uniqid("output-") + ".run";
-    let containerStartTime;
-    fs.writeFileSync(path.join(compileDirectory, inputFilename), input);
-    fs.writeFileSync(codeFilename, code);
-    if(compiler.run.length == 0) {
-        // Its a scripting language and only needs interpretation
-        const compileCmd = Compiler.getCompileCmd(compiler, Compiler.getVolumeFileName('solution'), Compiler.getVolumeFileName(errorFilename), Compiler.getVolumeFileName(inputFilename), Compiler.getVolumeFileName(outputFilename));
-        // Run only the interpretation code
-        containerCmd = compileCmd;
-    }
-    else {
-        const compileCmd = Compiler.getCompileCmd(compiler, Compiler.getVolumeFileName('solution'),Compiler.getVolumeFileName(errorFilename), Compiler.getVolumeFileName(inputFilename));
-        const runCmd = Compiler.getRunCmd(compiler, Compiler.getVolumeFileName('solution'), Compiler.getVolumeFileName(inputFilename), Compiler.getVolumeFileName(outputFilename));
-        // Run the compilation and interpretation code
-        containerCmd = compileCmd + ";" + runCmd;
-    }
-    // Start the container to compile and run the code safely
-    docker.run(compiler.image, ['sh', '-c', containerCmd], process.stdout, { Volumes: { '/volume': {} }, HostConfig: { 'Binds': [ compileDirectory + ':/volume:rw' ], Memory: memoryLimit } }, (err, data) => {
-    })
-    .on('start', (container) => {
-        containerStartTime = Date.now();
-        setTimeout(() => {
-            container.inspect((err, data) => {
-                if(data.State.Running) {
-                    if(!resultSent) {
-                        resultSent = true;
-                        // Close the container
-                        container.stop((err, data) => {});
-                        callback({ error: false, compiled: true, timeout: true, msg: '', timeTaken: '-' });                        
-                    }
+Compiler.compile = (compiler, code, inputs, callback, compiledAllCallback, compiledOneCallback) => {
+    // Start the container first
+    Compiler.startContainer(compiler, (compileDirectory, container) => {
+        // Check if it is a scripting language
+        if(compiler.run.length != 0) {
+            // Compile the code first
+            Compiler.compileCode(container, compiler, compileDirectory, code, (result) => {
+                if(result.error) {
+                    compiledAllCallback({ error: true, compiled: false, timeout: false, msg: result.msg });
+                }
+                else {
+                    // Run the code for all the inputs
+                    Compiler.runForInputs(container, compiler, compileDirectory, inputs,compiledAllCallback, compiledOneCallback);
                 }
             });
-        }, compiler.timeout * 1000);
-    })
-    .on('data', (data) => {
-        // Find the time taken in seconds
-        let timeTaken = (Date.now() - containerStartTime) /1000;
-        // Send data only if container not closed forcefully
-        if(data.StatusCode != 137) {
-            if(!resultSent) {
-                resultSent = true;
-                // Check if the testcase was satisfied
-                let errors = fs.readFileSync(path.join(compileDirectory, errorFilename)).toString();
-                if(errors.length > 0) {
-                    callback({ error: true, compiled: false, timeout: false, msg: errors });
-                }
-                else{
-                    let output = fs.readFileSync(path.join(compileDirectory, outputFilename)).toString();
-                    callback({ error: false, compiled: true, timeout: false, msg: output, timeTaken: `${timeTaken}s` });
-                }
-            }
         }
-        // Delete the created compiling folder
-        rmdir(compileDirectory, (err) => {
-            if(err) {
-                // TODO: Handle errors if needed
-            }
-        });
+        else {
+            // Just run the code for all the inputs
+            Compiler.runForInputs(container, compiler, compileDirectory, inputs,compiledAllCallback, compiledOneCallback);            
+        }
     });
 }
-Compiler.compileMany = (compiler, code, inputs, compiledAllCallback, compiledOneCallback) => {
+Compiler.runForInputs = (container, compiler, compileDirectory, inputs, compiledAllCallback, compiledOneCallback) => {
     let outputs = [];
     let compiledCount = 0;
     inputs.forEach((input, index) => {
-        Compiler.compile(compiler, code, input, (output) => {
-            outputs[index] = output;
+        Compiler.runCode(container, compiler, compileDirectory, input, (result) => {
+            outputs[index] = result.msg;
             compiledCount++;
             if(compiledOneCallback) {
                 compiledOneCallback({ index: index, output: output});
             }
             if(inputs.length == compiledCount) {
                 compiledAllCallback(outputs);
+                container.stop()
+                .then(() => {
+                    container.remove();
+                });
+                rmdir(compileDirectory, (err) => {
+                    if(err) {
+                        // TODO: Handle errors if needed
+                    }
+                });
             }
         }, index);
     });
