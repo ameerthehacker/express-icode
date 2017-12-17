@@ -23,8 +23,8 @@ router.post('/:langCode', (req, res, next) => {
 
     Compiler.findByCode(langCode, (err, compiler) => {
         if(!err && compiler) {
-            Compiler.compile(compiler, code, input, (result) => {
-                res.json(result);
+            Compiler.compile(compiler, code, [input], (results) => {
+                res.json(results[0]);
             });
         }
         else {

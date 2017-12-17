@@ -96,11 +96,11 @@ router.post('/', (req, res, next) => {
                 let pointsPerTestCase = 100.0 / challenge.testCases.length;
                 // Check if it is a custom Input
                 if (hasCustomInput) {
-                    Compiler.compile(compiler, code, customInput, (result) => {
+                    Compiler.compile(compiler, code, [customInput], (results) => {
                         result.input = customInput;
                         socket.emit(uid, { 'type': 'customInput', result:  result }); 
                         saveSubmission(submission, code, points, socket);
-                        res.json(result);                    
+                        res.json(results[0]);                    
                     });
                     return;
                 }
@@ -109,7 +109,7 @@ router.post('/', (req, res, next) => {
                 challenge.sampleTestCases.forEach((testCase) => {
                     sampleInputs.push(testCase.input);
                 });
-                Compiler.compileMany(compiler, code, sampleInputs, (results) => {
+                Compiler.compile(compiler, code, sampleInputs, (results) => {
                     let sampleTestCasesResult = { error: false, msg: [] };
                     for(let i = 0; i < results.length; i++) {
                         sampleTestCasesResult.compiled = results[i].compiled;
@@ -151,7 +151,7 @@ router.post('/', (req, res, next) => {
                             for(let i = 0 ; i < challenge.testCases.length ; i++) {
                                 testCases.push(challenge.testCases[i].input);
                             }                 
-                            Compiler.compileMany(compiler, code, testCases, (outputs) => {
+                            Compiler.compile(compiler, code, testCases, (outputs) => {
                                 for(let i = 0 ; i < challenge.testCases.length ; i++) {
                                     let testCaseResult = {
                                         input: challenge.testCases[i].input,

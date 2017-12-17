@@ -55,12 +55,12 @@ Compiler.getCompileCmd = (compiler, filename, errorFilename, inputFilename = fal
     compileCmd = compileCmd.replace(/:source/g, Compiler.getFullFilename(compiler, filename));
     compileCmd = compileCmd.replace(/:destination/g, path.join("home", path.basename(filename)));
     compileCmd = compileCmd.replace(/:destdir/g, "home");
-    compileCmd = compileCmd.replace(":error", errorFilename);
+    compileCmd = compileCmd.replace(/:error/g, errorFilename);
     if(inputFilename) {
-        compileCmd = compileCmd.replace(":input", inputFilename);
+        compileCmd = compileCmd.replace(/:input/g, inputFilename);
     }
     if(outputFilename) {
-        compileCmd = compileCmd.replace(":output", outputFilename);
+        compileCmd = compileCmd.replace(/:output/g, outputFilename);
     }
     return compileCmd;
 }
@@ -68,8 +68,8 @@ Compiler.getRunCmd = (compiler, filename, inputFilename, outputFileName) => {
     let runCmd = compiler.run;
     runCmd = runCmd.replace(/:source/g, path.join("home", path.basename(filename)));
     runCmd = runCmd.replace(/:destdir/g, "home");    
-    runCmd = runCmd.replace(":output", outputFileName);
-    runCmd = runCmd.replace(":input", inputFilename)
+    runCmd = runCmd.replace(/:output/g, outputFileName);
+    runCmd = runCmd.replace(/:input/g, inputFilename)
     return runCmd;
 }
 Compiler.getFullFilename = (compiler, filename) => {
@@ -92,7 +92,7 @@ Compiler.startContainer = (compiler, callback) => {
 Compiler.compileCode = (container, compiler, compileDirectory, code, callback) => {
     const codeFilename = path.join(compileDirectory, Compiler.getFullFilename(compiler, 'solution'));    
     const errorFilename = uniqid("error-") +  ".compile";    
-    let compileCmd = Compiler.getCompileCmd(compiler, Compiler.getVolumeFileName('solution'),Compiler.getVolumeFileName(errorFilename));
+    let compileCmd = Compiler.getCompileCmd(compiler, Compiler.getVolumeFileName('solution'), Compiler.getVolumeFileName(errorFilename));
 
     // Write the code file to the compiler directory
     fs.writeFileSync(codeFilename, code);
@@ -190,6 +190,11 @@ Compiler.compile = (compiler, code, inputs, compiledAllCallback, compiledOneCall
             Compiler.compileCode(container, compiler, compileDirectory, code, (result) => {
                 if(result.error && !result.compiled) {
                     compiledAllCallback([result]);
+                    rmdir(compileDirectory, (err) => {
+                        if(err) {
+                            // TODO: Handle errors if needed
+                        }
+                    });
                 }
                 else {
                     // Run the code for all the inputs
