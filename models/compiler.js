@@ -154,13 +154,15 @@ Compiler.runCode = (container, compiler, compileDirectory, code, input, callback
     });    
 }
 Compiler.execContainer = (container, cmd, callback) => {
-    container = docker.getContainer(container.id);
+    let resultSent = false;
+
     container.exec({ Cmd: ['sh', '-c', cmd], AttachStdin: false, AttachStdout: true, detach: false }, (err, exec) => {
         exec.start({ hijack: true }, (err, stream) => {
             const timer = setInterval(() => {
                 exec.inspect((err, data) => {
                     if(!err) {
-                        if(!data.Running) {
+                        if(!data.Running && !resultSent) {
+                            resultSent = true;
                             clearInterval(timer);
                             callback(err);
                         }

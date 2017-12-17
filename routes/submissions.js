@@ -68,6 +68,7 @@ router.get('/:langCode', (req, res, next) => {
    });
 });
 router.post('/', (req, res, next) => {
+    process.setMaxListeners(0);
     // To make sure that express dont discard the current request while compiling
     res.setTimeout(100 * 1000);
     // Get the socket
