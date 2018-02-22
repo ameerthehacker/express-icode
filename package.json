@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
+    "prod": "pm2 start ./bin/www -i 10",
     "db:seed": "node seed.js"
   },
   "dependencies": {
@@ -28,5 +29,8 @@
     "serve-favicon": "^2.4.4",
     "socket.io": "^2.0.3",
     "uniqid": "^4.1.1"
+  },
+  "devDependencies": {
+    "pm2": "^2.10.1"
   }
 }
