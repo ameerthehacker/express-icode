@@ -303,11 +303,6 @@ Compiler.compile = (
         result => {
           if (result.error && !result.compiled) {
             compiledAllCallback([result]);
-            rmdir(compileDirectory, err => {
-              if (err) {
-                // TODO: Handle errors if needed
-              }
-            });
           } else {
             // Run the code for all the inputs
             Compiler.runForInputs(
