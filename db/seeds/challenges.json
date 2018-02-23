@@ -5,9 +5,18 @@
     "inputFormat": "An integer denoting N",
     "outputFormat": "A list of integers from 1 to N seperated by line breaks",
     "constraints": "1 <= N <= 1000",
-    "sampleInputs": ["3\n", "2\n", "5\n"],
-    "sampleOutputs": ["1\n2\n3\n", "1\n2\n", "1\n2\n3\n"],
-    "explanation": "The given N is 3 so its printed from  1 to 3",
+    "sampleTestCases": [
+      {
+        "input": "1\n",
+        "output": "1\n",
+        "explanation": "The input is 1 so it prints 1 alone"
+      },
+      {
+        "input": "2\n",
+        "output": "1\n2\n",
+        "explanation": "The input is 2 so it prints 1 and 2"
+      }
+    ],
     "userId": "59a05aada1a0b221a9caac23",
     "slug": "fun-with-loops",
     "testCases": [
