@@ -273,7 +273,7 @@ Compiler.execContainer = (container, cmd, callback) => {
             }
           });
           docker.modem.demuxStream(stream, process.stdout, process.stderr);
-        }, 10);
+        }, 100);
       });
     }
   );
@@ -303,6 +303,11 @@ Compiler.compile = (
         result => {
           if (result.error && !result.compiled) {
             compiledAllCallback([result]);
+            rmdir(compileDirectory, err => {
+              if (err) {
+                // TODO: Handle errors if needed
+              }
+            });
           } else {
             // Run the code for all the inputs
             Compiler.runForInputs(
@@ -369,6 +374,11 @@ Compiler.runForInputs = (
           compiledAllCallback(outputs);
           container.stop().then(() => {
             container.remove();
+          });
+          rmdir(compileDirectory, err => {
+            if (err) {
+              // TODO: Handle errors if needed
+            }
           });
         }
       },
