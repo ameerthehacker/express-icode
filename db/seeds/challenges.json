@@ -5,60 +5,145 @@
     "inputFormat": "An integer denoting N",
     "outputFormat": "A list of integers from 1 to N seperated by line breaks",
     "constraints": "1 <= N <= 1000",
-    "sampleTestCases": [
-      {
-        "input": "1\n",
-        "output": "1\n",
-        "explanation": "The input is 1 so it prints 1 alone"
-      },
-      {
-        "input": "2\n",
-        "output": "1\n2\n",
-        "explanation": "The input is 2 so it prints 1 and 2"
-      }
-    ],
-    "userId": "59a05aada1a0b221a9caac23",
+    "userId": "59e706873990fd1004c621a7",
     "slug": "fun-with-loops",
+    "boilerplates": [],
     "testCases": [
       {
-        "output": "1\n2\n3\n4\n",
-        "input": "4"
+        "input": "4",
+        "output": "1\n2\n3\n4\n"
       },
       {
+        "input": "3",
+        "output": "1\n2\n3\n"
+      },
+      {
+        "input": "5",
+        "output": "1\n2\n3\n4\n5\n"
+      },
+      {
+        "input": "10",
+        "output": "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n"
+      },
+      {
+        "input": "7",
+        "output": "1\n2\n3\n4\n5\n6\n7\n"
+      },
+      {
+        "input": "1",
+        "output": "1\n"
+      },
+      {
+        "input": "11",
+        "output": "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n"
+      },
+      {
+        "input": "10",
+        "output": "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n"
+      },
+      {
+        "input": "9",
+        "output": "1\n2\n3\n4\n5\n6\n7\n8\n9\n"
+      },
+      {
+        "input": "6",
+        "output": "1\n2\n3\n4\n5\n6\n"
+      }
+    ],
+    "sampleTestCases": [
+      {
+        "input": "3",
         "output": "1\n2\n3\n",
-        "input": "3"
+        "explanation": "The given N is 3 so its printed from  1 to 3"
       },
       {
-        "output": "1\n2\n3\n4\n5\n",
-        "input": "5"
-      },
-      {
-        "output": "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n",
-        "input": "10"
-      },
-      {
-        "output": "1\n2\n3\n4\n5\n6\n7\n",
-        "input": "7"
-      },
-      {
+        "input": "1",
         "output": "1\n",
-        "input": "1"
+        "explanation": "The given N is 1 so just 1 is printed"
       },
       {
-        "output": "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n",
-        "input": "11"
-      },
-      {
-        "output": "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n",
-        "input": "10"
-      },
-      {
-        "output": "1\n2\n3\n4\n5\n6\n7\n8\n9\n",
-        "input": "9"
-      },
-      {
+        "input": "6",
         "output": "1\n2\n3\n4\n5\n6\n",
-        "input": "6"
+        "explanation": "Since n is 6 1 to 6 is printed"
+      }
+    ]
+  },
+  {
+    "title": "I'm Max",
+    "problemStatement": "Find the maximum element in the array",
+    "inputFormat":
+      "The first line is N (the number of elements in the array) followed by elements in the array",
+    "outputFormat": "Print the maximum element",
+    "constraints": "2 < N < 10",
+    "userId": "59e706873990fd1004c621a8",
+    "slug": "i-m-max",
+    "boilerplates": [],
+    "testCases": [
+      {
+        "input": "5\n1\n2\n5\n3\n4",
+        "output": "5"
+      },
+      {
+        "input": "10\n1\n2\n3\n4\n5\n6\n11\n8\n9\n10",
+        "output": "11"
+      },
+      {
+        "input": "5\n222\n555\n999\n1000\n1",
+        "output": "1000"
+      }
+    ],
+    "sampleTestCases": [
+      {
+        "input": "3\n4\n5\n1",
+        "output": "5",
+        "explanation":
+          "N is 3, array is [4, 5, 1]  and the maximum element is 5"
+      },
+      {
+        "input": "2\n4\n2",
+        "output": "4",
+        "explanation": "N is 2, the array is [4, 2] and the maximum number is 4"
+      }
+    ]
+  },
+  {
+    "title": "Find the shortest path",
+    "problemStatement":
+      "Sankar is in a City X. He want to go city Y to meet his girl friend. There are many path between X ant Y. You suggest the shortest path to him.",
+    "inputFormat":
+      "line 1: m\nline 2: n\n\nnext (m X n) matrix\ncity X is represent as 5\ncity Y is represent as 9\nroute represent as 1\nothers are 0.\n\n",
+    "outputFormat":
+      "if path available return shortest path\notherwise return -1",
+    "constraints": "0<m<=100\n0<n<=100",
+    "userId": "59e706873990fd1004c621a8",
+    "slug": "find-the-shortest-path",
+    "boilerplates": [],
+    "testCases": [
+      {
+        "input": "5\n5\n0 5 0 0 0\n1 0 1 0 0\n1 0 1 0 0\n1 0 0 1 0\n1 1 1 9 0",
+        "output": "3"
+      },
+      {
+        "input":
+          "5\n10\n5 1 1 1 0 0 1 1 1 0\n0 1 0 0 1 1 0 1 0 0\n0 0 1 0 0 0 1 0 0 0\n0 0 0 1 0 1 0 0 0 0\n0 0 0 0 1 0 0 0 0 9\n",
+        "output": "-1"
+      },
+      {
+        "input":
+          "5\n10\n5 1 1 1 1 1 1 1 0 0\n1 1 1 1 1 0 0 1 0 0\n1 0 0 1 0 1 0 0 0 0\n0 1 0 1 0 0 1 0 0 0\n0 0 0 1 1 1 1 1 1 9\n",
+        "output": "9"
+      },
+      {
+        "input": "5\n5\n0 0 0 0 0 \n0 0 0 0 0\n0 5 9 0 0\n0 0 0 0 0\n0 0 0 0 0",
+        "output": "0"
+      }
+    ],
+    "sampleTestCases": [
+      {
+        "input": "5\n5\n0 5 0 0 0\n1 0 1 0 0\n1 0 1 0 0\n1 0 0 1 0\n1 1 1 9 0",
+        "output": "3",
+        "explanation":
+          "X in (0,1)\nY in (4,3)\nshortest path is (1,2),(2,2),(3,3)\nso the answer is 3"
       }
     ]
   }

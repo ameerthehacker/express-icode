@@ -1,66 +1,235 @@
 [
-    { 
-        "language" : "Python", 
-        "code" : "2", 
-        "image" : "python", 
-        "compile" : "python :source  < :input > :output 2> :error", 
-        "extension" : "py", 
-        "mode" : "text/x-python", 
-        "boilerplate" : "print('Hello World!')",
-        "timeout" : 10
-    },
-    { 
-        "language" : "C", 
-        "code" : "1", 
-        "image" : "gcc", 
-        "compile" : "cc :source -o :destination 2> :error", 
-        "run" : ":source < :input > :output ", 
-        "extension" : "c", 
-        "mode" : "text/x-csrc", 
-        "boilerplate" : "#include<stdio.h>\n\nint main() {\n  printf(\"Hello World!\"); \n  return 0;\n}", 
-        "timeout" : 2
-    },
-    { 
-        "language" : "C++", 
-        "code" : "3", 
-        "image" : "gcc", 
-        "compile" : "c++ :source -o :destination 2> :error", 
-        "run" : ":source < :input > :output ", 
-        "extension" : "cpp", 
-        "mode" : "text/x-c++src", 
-        "boilerplate" : "#include<iostream>\n\nusing namespace std;\n\nint main() {\n  cout<<\"Hello World\";\n  return 0;\n}", 
-        "timeout" : 2
-    },
-    { 
-        "language" : "PHP", 
-        "code" : "4", 
-        "image" : "php", 
-        "compile" : "php  :source  < :input > :output 2> :error", 
-        "extension" : "php", 
-        "mode" : "text/x-php", 
-        "boilerplate" : "<?php \n\tfprintf(STDOUT, \"Hello World!\");\n?>", 
-        "timeout" : 10
-    },
-    { 
-        "language" : "Java", 
-        "code" : "6", 
-        "image" : "openjdk", 
-        "compile" : "javac :source  < :input > :output 2> :error -d :destdir ",
-        "run" : "cd :destdir;java `ls *.class | egrep \"^[[:alnum:]]+\" -o` < :input > :output ", 
-        "extension" : "java", 
-        "mode" : "text/x-java", 
-        "boilerplate" : "class Solution {\n  public static void main(String [] args) {\n    System.out.println(\"Hello World!\");\n  }\n}", 
-        "timeout" : 5
-    },
-    { 
-        "_id" : "59f9d625c3d8743a12ddf2f9",
-        "language" : "Ruby", 
-        "code" : "7", 
-        "image" : "ruby", 
-        "compile" : "ruby :source  < :input > :output 2> :error", 
-        "extension" : "rb", 
-        "mode" : "text/x-ruby", 
-        "boilerplate" : "puts 'Hello World!'", 
-        "timeout" : 10
-    }
+  {
+    "language": "Python 3",
+    "code": "2",
+    "image": "python",
+    "compile": "python :source  < :input > :output 2> :error",
+    "run": "",
+    "extension": "py",
+    "mode": "text/x-python",
+    "boilerplate": "print('Hello World!')",
+    "timeout": 10
+  },
+  {
+    "language": "C",
+    "code": "1",
+    "image": "gcc",
+    "compile": "cc :source -o :destination 2> :error",
+    "run": ":source < :input > :output ",
+    "extension": "c",
+    "mode": "text/x-csrc",
+    "boilerplate":
+      "#include<stdio.h>\n\nint main() {\n  printf(\"Hello World!\"); \n  return 0;\n}",
+    "timeout": 2
+  },
+  {
+    "language": "C++",
+    "code": "3",
+    "image": "gcc",
+    "compile":
+      "g++  :source -o :destination 2> :error -std=c++98 -pedantic-errors",
+    "run": ":source < :input > :output ",
+    "extension": "cpp",
+    "mode": "text/x-c++src",
+    "boilerplate":
+      "#include<iostream>\n\nusing namespace std;\n\nint main() {\n  cout<<\"Hello World\";\n  return 0;\n}",
+    "timeout": 2
+  },
+  {
+    "language": "PHP",
+    "code": "4",
+    "image": "php",
+    "compile": "php  :source  < :input > :output 2> :error",
+    "run": "",
+    "extension": "php",
+    "mode": "text/x-php",
+    "boilerplate": "<?php \n\tfprintf(STDOUT, \"Hello World!\");\n?>",
+    "timeout": 10
+  },
+  {
+    "language": "SHELL",
+    "code": "5",
+    "image": "alpine",
+    "compile": "sh :source  < :input > :output 2> :error",
+    "run": "",
+    "extension": "sh",
+    "mode": "text/x-sh",
+    "boilerplate": "#!/bin/sh\n\necho 'Hello World!'",
+    "timeout": 10
+  },
+  {
+    "language": "Java (Open JDK)",
+    "code": "6",
+    "image": "openjdk",
+    "compile": "javac :source 2> :error -d :destdir ",
+    "run":
+      "cd :destdir;java `ls *.class | egrep \"^[[:alnum:]]+\" -o` < :input > :output ",
+    "extension": "java",
+    "mode": "text/x-java",
+    "boilerplate":
+      "class Solution {\n  public static void main(String [] args) {\n    System.out.println(\"Hello World!\");\n  }\n}",
+    "timeout": 5
+  },
+  {
+    "language": "Ruby",
+    "code": "7",
+    "image": "ruby",
+    "compile": "ruby :source  < :input > :output 2> :error",
+    "run": "",
+    "extension": "rb",
+    "mode": "text/x-ruby",
+    "boilerplate": "puts 'Hello World!'",
+    "timeout": 10
+  },
+  {
+    "language": "JavaScript (Node.js)",
+    "code": "8",
+    "image": "node",
+    "compile": "node :source  < :input > :output 2> :error",
+    "extension": "jsx",
+    "mode": "text/javascript",
+    "boilerplate": "console.log('Hello World!');",
+    "timeout": 10,
+    "run": ""
+  },
+  {
+    "language": "Go",
+    "code": "9",
+    "image": "golang",
+    "compile": "go run :source  < :input > :output 2> :error",
+    "extension": "go",
+    "mode": "text/x-go",
+    "boilerplate":
+      "package main\n\nimport \"fmt\"\n\nfunc main() {\n  fmt.Println(\"Hello World!\")\n}\n",
+    "timeout": 10,
+    "run": ""
+  },
+  {
+    "language": "Swift",
+    "code": "10",
+    "image": "swift",
+    "compile": "swiftc :source -o :destination 2> :error",
+    "extension": "swift",
+    "mode": "text/x-swift",
+    "boilerplate": "import Foundation\n\nprint(\"Hello World!\")",
+    "timeout": 10,
+    "run": ":source < :input > :output "
+  },
+  {
+    "language": "Haskell",
+    "code": "11",
+    "image": "haskell",
+    "compile": "ghc :source -o :destination 2> :error",
+    "run": ":source < :input > :output ",
+    "extension": "hs",
+    "mode": "text/x-haskell",
+    "boilerplate": "main = putStrLn \"Hello, World!\"",
+    "timeout": 2
+  },
+  {
+    "language": "C++11",
+    "code": "12",
+    "image": "gcc",
+    "compile":
+      "g++ :source -o :destination 2> :error -std=c++11 -pedantic-errors",
+    "run": ":source < :input > :output ",
+    "extension": "cpp",
+    "mode": "text/x-c++src",
+    "boilerplate":
+      "#include<iostream>\n\nusing namespace std;\n\nint main() {\n  cout<<\"Hello World\";\n  return 0;\n}",
+    "timeout": 2
+  },
+  {
+    "language": "C++14",
+    "code": "13",
+    "image": "gcc",
+    "compile":
+      "g++  :source -o :destination 2> :error -std=c++14 -pedantic-errors",
+    "run": ":source < :input > :output ",
+    "extension": "cpp",
+    "mode": "text/x-c++src",
+    "boilerplate":
+      "#include<iostream>\n\nusing namespace std;\n\nint main() {\n  cout<<\"Hello World\";\n  return 0;\n}",
+    "timeout": 2
+  },
+  {
+    "language": "C++17",
+    "code": "14",
+    "image": "gcc",
+    "compile":
+      "g++  :source -o :destination 2> :error -std=c++17 -pedantic-errors",
+    "run": ":source < :input > :output ",
+    "extension": "cpp",
+    "mode": "text/x-c++src",
+    "boilerplate":
+      "#include<iostream>\n\nusing namespace std;\n\nint main() {\n  cout<<\"Hello World\";\n  return 0;\n}",
+    "timeout": 2
+  },
+  {
+    "language": "Rust",
+    "code": "15",
+    "image": "rust",
+    "compile": "rustc :source -o :destination 2> :error",
+    "extension": "rs",
+    "mode": "rust",
+    "boilerplate": "fn main() {\n  println!(\"Hello World!\");\n}\n",
+    "timeout": 10,
+    "run": ":source < :input > :output "
+  },
+  {
+    "language": "Perl",
+    "code": "16",
+    "image": "perl",
+    "compile": "perl  :source  < :input > :output 2> :error",
+    "run": "",
+    "extension": "pl",
+    "mode": "text/x-perl",
+    "boilerplate": "print 'Hello World'",
+    "timeout": 10
+  },
+  {
+    "language": "Groovy",
+    "code": "18",
+    "image": "groovy",
+    "compile": "groovy :source  < :input > :output 2> :error",
+    "run": "",
+    "extension": "groovy",
+    "mode": "text/x-groovy",
+    "boilerplate": "println('Hello World!')",
+    "timeout": 10
+  },
+  {
+    "language": "Python 2",
+    "code": "17",
+    "image": "python:2.7.14",
+    "compile": "python :source  < :input > :output 2> :error",
+    "run": "",
+    "extension": "py",
+    "mode": "text/x-python",
+    "boilerplate": "print 'Hello World!'",
+    "timeout": 10
+  },
+  {
+    "language": "Elixir",
+    "code": "19",
+    "image": "elixir",
+    "compile": "elixir :source  < :input > :output 2> :error",
+    "run": "",
+    "extension": "exs",
+    "mode": "elixir",
+    "boilerplate": "IO.puts \"Hello World!\"",
+    "timeout": 10
+  },
+  {
+    "language": "Scala",
+    "code": "20",
+    "image": "williamyeh/scala",
+    "compile": "scala :source  < :input > :output 2> :error",
+    "run": "",
+    "extension": "scala",
+    "mode": "text/x-scala",
+    "boilerplate":
+      "object HelloWorld {\n  def main(args: Array[String]): Unit = {\n    println(\"Hello, world!\")\n  }\n}",
+    "timeout": 5
+  }
 ]
